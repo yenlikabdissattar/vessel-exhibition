@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VESSEL — Exhibition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;1,400&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three":         "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:   #0D0D0D;
+      --cream: #F5F3EE;
+      --mid:   #888;
+      --rule:  rgba(255,255,255,0.10);
+      --gold:  #C8A96E;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--ink);
+      color: var(--cream);
+      font-family: 'EB Garamond', serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── HERO (100vh) ────────────────────────────────────────────────────────── */
+    .hero {
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      position: relative;
+    }
+
+    /* Left panel */
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      padding: 2.4rem 2.6rem 2.4rem;
+      border-right: 1px solid var(--rule);
+      overflow: hidden;
+    }
+
+    .wordmark {
+      font-family: 'Bodoni Moda', serif;
+      font-size: clamp(3.2rem, 6vw, 5.5rem);
+      font-weight: 400;
+      line-height: 0.90;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.5rem;
+    }
+    .tagline {
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245,243,238,0.38);
+      margin-bottom: 2rem;
+    }
+
+    /* Mode tabs */
+    .mode-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 1.6rem;
+    }
+    .mode-tab {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.53rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      color: rgba(245,243,238,0.35);
+      padding: 0 0 0.65rem;
+      margin-right: 1.4rem;
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .mode-tab.active { color: var(--cream); border-bottom-color: var(--cream); }
+    .mode-panel { display: none; }
+    .mode-panel.active { display: flex; flex-direction: column; gap: 1rem; }
+
+    /* Fields */
+    .field-label {
+      font-size: 0.50rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(245,243,238,0.38);
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+    .field-input {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.10rem;
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--rule);
+      color: var(--cream);
+      padding: 0.3rem 0 0.5rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field-input::placeholder { color: rgba(245,243,238,0.22); }
+    .field-input:focus { border-bottom-color: rgba(245,243,238,0.55); }
+
+    /* Buttons */
+    .btn-primary {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.53rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      background: var(--cream);
+      color: var(--ink);
+      border: none;
+      padding: 0.78rem 1.8rem;
+      cursor: pointer;
+      transition: opacity 0.18s;
+      align-self: flex-start;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.78; }
+    .btn-primary:disabled { opacity: 0.28; cursor: not-allowed; }
+
+    .btn-outline {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.53rem;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--cream);
+      border: 1px solid rgba(245,243,238,0.35);
+      padding: 0.68rem 1.4rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      align-self: flex-start;
+    }
+    .btn-outline:hover { border-color: var(--cream); }
+
+    /* Camera in left panel */
+    .cam-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #111;
+      overflow: hidden;
+    }
+    #left-video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      display: block;
+    }
+    #left-canvas { display: none; }
+    .cam-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .cam-reticle {
+      width: 44%; aspect-ratio: 1;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 50%;
+    }
+    .cam-freeze {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.62);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.22s; pointer-events: none;
+    }
+    .cam-freeze.active { opacity: 1; }
+    .cam-freeze-label {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.50rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+    }
+
+    /* Swatches */
+    .swatches { display: none; flex-direction: column; gap: 0.35rem; }
+    .swatch-row { display: flex; gap: 0.3rem; }
+    .swatch-dot {
+      width: 1.1rem; height: 1.1rem;
+      border-radius: 50%;
+      background: #333;
+      border: 1px solid rgba(255,255,255,0.12);
+      transition: background 0.3s;
+    }
+    .swatch-cap {
+      font-size: 0.44rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(245,243,238,0.30);
+    }
+
+    /* Status */
+    .gen-status {
+      font-size: 0.55rem;
+      letter-spacing: 0.10em;
+      color: rgba(245,243,238,0.40);
+      min-height: 1em;
+    }
+    .gen-error {
+      font-size: 0.55rem;
+      color: #D05050;
+      letter-spacing: 0.04em;
+    }
+
+    /* Traits hint */
+    .trait-hint {
+      margin-top: auto;
+      padding-top: 1.6rem;
+      border-top: 1px solid var(--rule);
+      font-size: 0.50rem;
+      letter-spacing: 0.06em;
+      color: rgba(245,243,238,0.25);
+      line-height: 2.1;
+    }
+    .trait-hint strong { color: rgba(245,243,238,0.40); font-weight: 400; }
+
+    /* ── Right panel: 3D viewer + render ─────────────────────────────────────── */
+    .hero-right {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #main-3d {
+      flex: 1;
+      min-height: 0;
+    }
+    #main-3d canvas { display: block; width: 100% !important; height: 100% !important; }
+
+    .viewer-hint {
+      position: absolute;
+      bottom: 1.2rem;
+      right: 1.4rem;
+      font-size: 0.44rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245,243,238,0.22);
+      pointer-events: none;
+    }
+
+    /* Render strip — appears at bottom of right panel after generation */
+    .render-strip {
+      display: none;
+      flex-direction: row;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 1rem 1.6rem;
+      border-top: 1px solid var(--rule);
+      background: rgba(0,0,0,0.55);
+    }
+    .render-strip.visible { display: flex; }
+    .render-strip img {
+      height: 80px;
+      width: auto;
+      display: block;
+    }
+    .render-strip-meta {
+      flex: 1;
+    }
+    .render-strip-traits {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+    }
+    .render-strip-sub {
+      font-size: 0.48rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(245,243,238,0.38);
+      margin-top: 0.25rem;
+    }
+
+    .photobooth-trigger {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.50rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      background: none;
+      border: 1px solid rgba(245,243,238,0.30);
+      color: var(--cream);
+      padding: 0.55rem 1.1rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .photobooth-trigger:hover { border-color: var(--cream); }
+
+    /* Loading overlay inside hero-right */
+    .gen-loading {
+      position: absolute;
+      inset: 0;
+      background: rgba(13,13,13,0.85);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.8rem;
+      z-index: 5;
+    }
+    .gen-loading.active { display: flex; }
+
+    .vl-draw {
+      fill: none; stroke: var(--cream); stroke-width: 0.9;
+      stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: 1; stroke-dashoffset: 1;
+    }
+    .vl-pot   { animation: vlDraw 1.4s ease-out 0.30s forwards; }
+    .vl-rim   { animation: vlDraw 0.5s ease-out 1.00s forwards; }
+    .vl-stem  { animation: vlDraw 0.7s ease-out 1.55s forwards; }
+    .vl-leaf1 { animation: vlDraw 0.4s ease-out 1.90s forwards; }
+    .vl-leaf2 { animation: vlDraw 0.4s ease-out 2.10s forwards; }
+    .vl-ctr   { animation: vlDraw 0.6s ease-out 2.30s forwards; }
+    .vl-pet   { animation: vlDraw 0.18s ease-out 2.50s forwards; }
+    @keyframes vlDraw { from{stroke-dashoffset:1;} to{stroke-dashoffset:0;} }
+    .gen-loading.active .vl-plant svg {
+      animation: vlFloat 3.2s ease-in-out 3.4s infinite;
+    }
+    @keyframes vlFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+
+    .loading-phase {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.52rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(245,243,238,0.50);
+      text-align: center;
+      transition: opacity 0.4s;
+    }
+    .loading-bar {
+      width: 60px; height: 1px;
+      background: rgba(245,243,238,0.10);
+      position: relative; overflow: hidden;
+    }
+    .loading-bar::after {
+      content:''; position:absolute; top:0; left:-50%;
+      width:50%; height:100%; background: rgba(245,243,238,0.60);
+      animation: lbSweep 2.2s cubic-bezier(0.4,0,0.6,1) infinite;
+    }
+    @keyframes lbSweep { 0%{left:-50%;} 100%{left:110%;} }
+
+    /* ── SCROLL SECTIONS (light) ─────────────────────────────────────────────── */
+    .light-section {
+      background: var(--cream);
+      color: var(--ink);
+      border-top: 1px solid #D8D5CE;
+    }
+
+    .sec-header {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      padding: 1.8rem 2.6rem;
+      border-bottom: 1px solid #D8D5CE;
+      align-items: baseline;
+      gap: 2rem;
+    }
+    .sec-num {
+      font-size: 0.50rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #999;
+    }
+    .sec-title {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    /* ── RECENTS ─────────────────────────────────────────────────────────────── */
+    .recents-scroll {
+      display: flex;
+      flex-direction: row;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .recents-scroll::-webkit-scrollbar { display: none; }
+
+    .recent-cell {
+      flex-shrink: 0;
+      width: 220px;
+      border-right: 1px solid #D8D5CE;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .recent-cell img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      background: #EEE;
+      transition: transform 0.4s ease;
+    }
+    .recent-cell:hover img { transform: scale(1.04); }
+    .recent-cell-label {
+      padding: 0.55rem 0.8rem 0.7rem;
+      font-size: 0.46rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #999;
+      border-top: 1px solid #D8D5CE;
+    }
+
+    /* ── ABOUT ───────────────────────────────────────────────────────────────── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 180px 1fr 1fr 1fr;
+      gap: 0;
+    }
+    .about-col {
+      padding: 2.6rem;
+      border-right: 1px solid #D8D5CE;
+      font-size: 0.92rem;
+      line-height: 1.82;
+      color: #333;
+    }
+    .about-col:last-child { border-right: none; }
+    .about-col em { font-style: italic; }
+    .about-col-label {
+      font-size: 0.48rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 1rem;
+    }
+
+    /* ── PROCESS ─────────────────────────────────────────────────────────────── */
+    .process-row {
+      display: grid;
+      grid-template-columns: 180px repeat(4, 1fr);
+      gap: 0;
+    }
+    .process-col {
+      padding: 2.4rem 2.2rem;
+      border-right: 1px solid #D8D5CE;
+    }
+    .process-col:last-child { border-right: none; }
+    .process-col-num {
+      font-size: 0.46rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #AAA;
+      margin-bottom: 0.8rem;
+    }
+    .process-col-title {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 1.05rem;
+      line-height: 1.2;
+      margin-bottom: 0.7rem;
+    }
+    .process-col-body {
+      font-size: 0.82rem;
+      line-height: 1.78;
+      color: #555;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────────────────────────────── */
+    footer {
+      background: var(--cream);
+      border-top: 1px solid #D8D5CE;
+      padding: 2rem 2.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .footer-l {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.10em;
+      color: #999;
+    }
+    .footer-r {
+      font-size: 0.50rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #CCC;
+      text-align: right;
+    }
+
+    /* ── PHOTOBOOTH MODAL ────────────────────────────────────────────────────── */
+    .pb-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: #000;
+      display: none;
+      flex-direction: column;
+    }
+    .pb-modal.open { display: flex; }
+
+    .pb-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      flex-shrink: 0;
+      background: rgba(0,0,0,0.92);
+      backdrop-filter: blur(6px);
+      position: relative;
+      z-index: 10;
+    }
+    .pb-title {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+    }
+    .pb-close {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.40);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .pb-close:hover { color: #fff; }
+
+    /* Phases */
+    .pb-phase { display: none; flex: 1; flex-direction: column; }
+    .pb-phase.active { display: flex; }
+
+    /* Phases need min-height: 0 to not overflow flex parent */
+    .pb-phase { min-height: 0; }
+
+    /* Phase 1 — aim camera */
+    .pb-aim {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+    }
+    /* 16:9 box that holds the camera feed + vessel overlay */
+    .pb-aim-inner {
+      position: relative;
+      aspect-ratio: 16/9;
+      height: 100%;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    #pb-video {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      display: block;
+    }
+    #pb-canvas { display: none; }
+    .pb-aim-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .pb-aim-reticle {
+      width: 38%; aspect-ratio: 3/4;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 4px;
+    }
+
+    .pb-countdown-display {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Bodoni Moda', serif;
+      font-size: 8rem;
+      color: rgba(255,255,255,0.85);
+      line-height: 1;
+      display: none;
+      z-index: 2;
+    }
+
+    .pb-aim-bottom {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.4rem;
+      padding: 1.4rem 2rem;
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(6px);
+      position: relative;
+      z-index: 10;
+    }
+    .pb-capture-btn {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 0.85rem 2.4rem;
+      cursor: pointer;
+      transition: opacity 0.18s;
+    }
+    .pb-capture-btn:hover { opacity: 0.82; }
+
+    /* Size adjust buttons */
+    .pb-size-btns {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .pb-size-btn {
+      font-size: 1.1rem;
+      line-height: 1;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.70);
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .pb-size-btn:hover { background: rgba(255,255,255,0.20); }
+
+    /* Drag handle overlay inside vessel overlay */
+    .pb-vessel-handle {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+    .pb-vessel-handle.dragging { cursor: grabbing; }
+    .pb-vessel-hint {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.40rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* Phase 2 — result */
+    #pb-result-phase {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.4rem;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .pb-composite {
+      display: flex;
+      gap: 2px;
+      width: 100%;
+      max-width: 760px;
+    }
+    .pb-composite img {
+      flex: 1;
+      width: 0;
+      display: block;
+      object-fit: cover;
+      max-height: 50vh;
+    }
+
+    .pb-qr-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+    }
+    #pb-qr { background: #fff; padding: 10px; }
+    .pb-qr-label {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.52rem;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+    }
+
+    .pb-actions {
+      display: flex;
+      gap: 1rem;
+    }
+    .pb-download {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.50rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.55);
+      padding: 0.55rem 1.2rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .pb-download:hover { border-color: #fff; color: #fff; }
+    .pb-retake {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.50rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.55);
+      padding: 0.55rem 1.2rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .pb-retake:hover { border-color: #fff; color: #fff; }
+
+    /* ── SCAN MODE: full-panel camera ───────────────────────────────────────── */
+    .hero.scan-mode {
+      grid-template-columns: 1fr 1fr;
+    }
+    .hero.scan-mode .wordmark,
+    .hero.scan-mode .tagline,
+    .hero.scan-mode .mode-tabs,
+    .hero.scan-mode #panel-type,
+    .hero.scan-mode .trait-hint,
+    .hero.scan-mode .gen-status,
+    .hero.scan-mode .gen-error { display: none !important; }
+    .hero.scan-mode .hero-left {
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero.scan-mode #panel-scan {
+      position: absolute;
+      inset: 0;
+      gap: 0;
+    }
+    .hero.scan-mode .cam-wrap {
+      flex: 1;
+      aspect-ratio: unset;
+      min-height: 0;
+      border-radius: 0;
+    }
+    .scan-bottom-bar {
+      flex-shrink: 0;
+      padding: 0.9rem 1.4rem;
+      background: rgba(13,13,13,0.84);
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      border-top: 1px solid var(--rule);
+    }
+    .scan-back-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 10;
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.46rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      background: rgba(0,0,0,0.55);
+      color: rgba(245,243,238,0.70);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 0.36rem 0.75rem;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: border-color 0.15s, color 0.15s;
+      display: none;
+    }
+    .hero.scan-mode .scan-back-btn { display: block; }
+    .result-reveal-btn {
+      display: none;
+      position: absolute;
+      bottom: 1.4rem;
+      right: 1.6rem;
+      z-index: 8;
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.53rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      background: var(--cream);
+      color: var(--ink);
+      border: none;
+      padding: 0.78rem 1.8rem;
+      cursor: pointer;
+      transition: opacity 0.18s;
+      animation: revealPulse 1.6s ease-in-out infinite;
+    }
+    .result-reveal-btn.visible { display: block; }
+    .result-reveal-btn:hover { opacity: 0.80; }
+    @keyframes revealPulse {
+      0%,100%{box-shadow:0 0 0 0 rgba(245,243,238,0.35);}
+      50%{box-shadow:0 0 0 8px rgba(245,243,238,0);}
+    }
+
+    /* #main-3d background is driven by scene.background (pastel matched to pot) */
+    #main-3d { background: transparent; }
+
+    /* Vessel overlay — bottom-right of the 16:9 camera frame */
+    .pb-vessel-overlay {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 36%;
+      height: 90%;
+      pointer-events: auto;
+      z-index: 3;
+    }
+    .pb-vessel-overlay canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    /* Result phase: single full composite */
+    .pb-composite.single { display: block; }
+    .pb-composite.single img {
+      width: 100%; height: auto;
+      max-height: 52vh;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       HERO — full screen
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="hero">
+
+    <!-- Left: controls -->
+    <div class="hero-left">
+      <div class="wordmark">VESSEL</div>
+      <p class="tagline">Personality → Ceramic Form · 2026</p>
+
+      <!-- Mode tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-panel="type">Type traits</button>
+        <button class="mode-tab" data-panel="scan">Scan person</button>
+      </div>
+
+      <!-- Type panel -->
+      <div class="mode-panel active" id="panel-type">
+        <div>
+          <label class="field-label" for="main-input">Personality traits</label>
+          <input type="text" id="main-input" class="field-input"
+            placeholder="anxious, serene, chaotic…" autocomplete="off" spellcheck="false">
+        </div>
+        <div>
+          <label class="field-label" for="main-label">Name or tag (optional)</label>
+          <input type="text" id="main-label" class="field-input"
+            placeholder="your name, a word…" autocomplete="off" maxlength="60">
+        </div>
+        <button id="gen-btn" class="btn-primary">Generate vessel</button>
+      </div>
+
+      <!-- Scan panel -->
+      <div class="mode-panel" id="panel-scan">
+        <div class="cam-wrap">
+          <video id="left-video" autoplay playsinline muted></video>
+          <canvas id="left-canvas"></canvas>
+          <div class="cam-overlay"><div class="cam-reticle"></div></div>
+          <button class="scan-back-btn" id="scan-back-btn">← Type traits</button>
+        </div>
+        <div class="scan-bottom-bar">
+          <div class="swatches" id="left-swatches">
+            <div class="swatch-row">
+              <div class="swatch-dot" id="lsw0"></div>
+              <div class="swatch-dot" id="lsw1"></div>
+              <div class="swatch-dot" id="lsw2"></div>
+              <div class="swatch-dot" id="lsw3"></div>
+              <div class="swatch-dot" id="lsw4"></div>
+            </div>
+            <span class="swatch-cap">Live colour from clothing</span>
+          </div>
+          <div style="display:flex;gap:0.7rem;align-items:flex-end;flex-wrap:wrap;">
+            <div style="flex:1;min-width:110px;">
+              <label class="field-label" for="scan-label">Name (optional)</label>
+              <input type="text" id="scan-label" class="field-input"
+                placeholder="your name…" autocomplete="off" maxlength="60">
+            </div>
+            <button id="left-cam-start" class="btn-outline">Enable camera</button>
+            <button id="snap-btn" class="btn-primary" disabled style="display:none">Capture</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="gen-status" id="gen-status"></p>
+      <p class="gen-error" id="gen-error" style="display:none"></p>
+
+      <div class="trait-hint">
+        <strong>Try:</strong><br>
+        anxious · serene · chaotic · nostalgic<br>
+        melancholic · playful · mysterious · ethereal<br>
+        gentle · warm · romantic · dreamy · wild<br>
+        bold · stoic · tender · frantic · whimsical
+      </div>
+    </div>
+
+    <!-- Right: 3D viewer + render strip -->
+    <div class="hero-right">
+      <div id="main-3d"></div>
+      <span class="viewer-hint">Drag to inspect · scroll to zoom</span>
+      <button class="result-reveal-btn" id="result-reveal-btn">View your vessel →</button>
+
+      <!-- Loading overlay -->
+      <div class="gen-loading" id="gen-loading">
+        <div class="vl-plant">
+          <svg viewBox="0 0 100 140" width="60" height="84" aria-hidden="true">
+            <path pathLength="1" class="vl-draw vl-pot"
+              d="M20,128 L15,62 L85,62 L80,128 Q79,133 50,133 Q21,133 20,128 Z"/>
+            <line pathLength="1" class="vl-draw vl-rim" x1="10" y1="62" x2="90" y2="62"/>
+            <line pathLength="1" class="vl-draw vl-stem" x1="50" y1="62" x2="50" y2="33"/>
+            <path pathLength="1" class="vl-draw vl-leaf1" d="M50,50 Q38,46 32,48 Q36,54 50,50 Z"/>
+            <path pathLength="1" class="vl-draw vl-leaf2" d="M50,40 Q62,36 68,38 Q64,44 50,40 Z"/>
+            <circle pathLength="1" class="vl-draw vl-ctr" cx="50" cy="18" r="7"/>
+            <line pathLength="1" class="vl-draw vl-pet" x1="57" y1="18" x2="65" y2="18"/>
+            <line pathLength="1" class="vl-draw vl-pet" x1="55" y1="23" x2="61" y2="28" style="animation-delay:2.55s"/>
+            <line pathLength="1" class="vl-draw vl-pet" x1="50" y1="25" x2="50" y2="33" style="animation-delay:2.60s"/>
+            <line pathLength="1" class="vl-draw vl-pet" x1="45" y1="23" x2="39" y2="28" style="animation-delay:2.65s"/>
+            <line pathLength="1" class="vl-draw vl-pet" x1="43" y1="18" x2="35" y2="18" style="animation-delay:2.70s"/>
+            <line pathLength="1" class="vl-draw vl-pet" x1="45" y1="13" x2="39" y2="8" style="animation-delay:2.75s"/>
+            <line pathLength="1" class="vl-draw vl-pet" x1="50" y1="11" x2="50" y2="3" style="animation-delay:2.80s"/>
+            <line pathLength="1" class="vl-draw vl-pet" x1="55" y1="13" x2="61" y2="8" style="animation-delay:2.85s"/>
+          </svg>
+        </div>
+        <p class="loading-phase" id="loading-phase">Reading traits</p>
+        <div class="loading-bar"></div>
+      </div>
+
+      <!-- Render strip (shown after generation) -->
+      <div class="render-strip" id="render-strip">
+        <img id="strip-img" src="" alt="" crossorigin="anonymous">
+        <div class="render-strip-meta">
+          <div class="render-strip-traits" id="strip-traits"></div>
+          <div class="render-strip-sub">Your vessel · rendered in Blender</div>
+        </div>
+        <button class="photobooth-trigger" id="photobooth-btn">
+          📷 &nbsp;Take a photo with your pot
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       RECENTS
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="light-section">
+    <div class="sec-header">
+      <span class="sec-num">Recents</span>
+      <span class="sec-title">Vessels Generated Today</span>
+    </div>
+    <div class="recents-scroll" id="recents-scroll">
+      <!-- pre-loaded archive cells -->
+      <div class="recent-cell">
+        <img src="../Blender x Claude/renders/flower_pot_bubbly_cute2.png" alt="bubbly">
+        <div class="recent-cell-label">Bubbly · Cute</div>
+      </div>
+      <div class="recent-cell">
+        <img src="../Blender x Claude/renders/flower_pot_angry.png" alt="angry">
+        <div class="recent-cell-label">Angry</div>
+      </div>
+      <div class="recent-cell">
+        <img src="../Blender x Claude/renders/flower_pot_grumpy.png" alt="grumpy">
+        <div class="recent-cell-label">Grumpy</div>
+      </div>
+      <div class="recent-cell">
+        <img src="../Blender x Claude/renders/flower_pot_personality.png" alt="personality">
+        <div class="recent-cell-label">Personality</div>
+      </div>
+      <div class="recent-cell">
+        <img src="../Blender x Claude/renders/flower_pots_mood.png" alt="mood">
+        <div class="recent-cell-label">Mood</div>
+      </div>
+      <div class="recent-cell">
+        <img src="../Blender x Claude/renders/flower_pots_v5.png" alt="study">
+        <div class="recent-cell-label">Study</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       ABOUT
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="light-section">
+    <div class="sec-header">
+      <span class="sec-num">01</span>
+      <span class="sec-title">About the Work</span>
+    </div>
+    <div class="about-grid">
+      <div class="about-col" style="background:#F0EEE9;">
+        <p class="about-col-label">Concept</p>
+      </div>
+      <div class="about-col">
+        <p>Can a ceramic vessel hold a personality the way it holds water? <em>VESSEL</em> asks that question through code.</p>
+        <p>Each pot begins as a set of personality traits. These words pass through a colour psychology engine and a geometry system, instructing Blender to sculpt a unique vessel.</p>
+      </div>
+      <div class="about-col">
+        <p>The scan mode extends this: a camera reads your expression and clothing colour through Claude Vision, extracts personality traits, and builds the pot from you.</p>
+        <p><em>Shape, glaze, and flower species are all determined by who you are in the moment you arrive.</em></p>
+      </div>
+      <div class="about-col">
+        <p>The result sits between tool and portrait. Every pot is a translation — from feeling to form, from language to object. No two are identical.</p>
+        <p>The archive grows with each visitor who sits in front of the camera.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PROCESS
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="light-section">
+    <div class="sec-header">
+      <span class="sec-num">02</span>
+      <span class="sec-title">How It Works</span>
+    </div>
+    <div class="process-row">
+      <div class="process-col" style="background:#F0EEE9;"></div>
+      <div class="process-col">
+        <p class="process-col-num">01 — Input</p>
+        <p class="process-col-title">Trait or scan</p>
+        <p class="process-col-body">Text traits, or a camera scan that reads your expression and clothing colour through Claude Vision.</p>
+      </div>
+      <div class="process-col">
+        <p class="process-col-num">02 — Mapping</p>
+        <p class="process-col-title">Psychology engine</p>
+        <p class="process-col-body">Traits map to colour values, pot profiles (urn, hourglass, balloon…), flower species, and surface texture.</p>
+      </div>
+      <div class="process-col">
+        <p class="process-col-num">03 — Sculpt</p>
+        <p class="process-col-title">Blender renders</p>
+        <p class="process-col-body">A Python script builds the scene — NURBS pot, bezier stems, flat oval leaves — and Cycles renders in 48 samples.</p>
+      </div>
+      <div class="process-col">
+        <p class="process-col-num">04 — Vessel</p>
+        <p class="process-col-title">Delivered in ≈ 45 s</p>
+        <p class="process-col-body">The 1024 × 1024 render appears. Take a photo with your pot — scan the QR code to keep it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-l">
+      VESSEL — Yenlik Abdissattar — 2026<br>
+      Blender · Cycles · Python · Claude Vision · Three.js · MCP
+    </div>
+    <div class="footer-r">
+      Exhibition piece<br>
+      AI-driven generative ceramics
+    </div>
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PHOTOBOOTH MODAL
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="pb-modal" id="pb-modal">
+    <div class="pb-topbar">
+      <span class="pb-title">Photobooth — Take a photo with your vessel</span>
+      <button class="pb-close" id="pb-close" aria-label="Close">×</button>
+    </div>
+
+    <!-- Phase 1: camera aim + capture -->
+    <div class="pb-phase active" id="pb-aim-phase">
+      <div class="pb-aim">
+        <div class="pb-aim-inner">
+          <video id="pb-video" autoplay playsinline muted></video>
+          <canvas id="pb-canvas"></canvas>
+          <div class="pb-aim-overlay">
+            <div class="pb-aim-reticle"></div>
+          </div>
+          <div class="pb-countdown-display" id="pb-countdown"></div>
+          <!-- Floral frame — sits above video, below vessel -->
+          <svg id="pb-frame-svg" viewBox="0 0 160 90" xmlns="http://www.w3.org/2000/svg"
+               style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:visible">
+            <!-- ══ TOP-LEFT ══ -->
+            <g transform="translate(14,12)">
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(0,0,0)"   fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(45,0,0)"  fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(90,0,0)"  fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(135,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(180,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(225,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(270,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(315,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <circle cx="0" cy="0" r="2.0" fill="#c8883c" fill-opacity="0.92"/>
+              <path d="M2,3 C5,8 9,13 11,19 C13,23 15,27 16,32" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.80"/>
+              <g transform="translate(9,14) rotate(35)"><path d="M0,0 C-3.5,-2 -3,-8 0,-10 C3,-8 3.5,-2 0,0 Z" fill="#4a8030" fill-opacity="0.78"/></g>
+              <g transform="translate(15,26) rotate(-20)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#5a9040" fill-opacity="0.72"/></g>
+              <g transform="translate(17,33)">
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(0,0,0)"   fill="#f0b0c0" fill-opacity="0.82"/>
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(72,0,0)"  fill="#f0b0c0" fill-opacity="0.82"/>
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(144,0,0)" fill="#f0b0c0" fill-opacity="0.82"/>
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(216,0,0)" fill="#f0b0c0" fill-opacity="0.82"/>
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(288,0,0)" fill="#f0b0c0" fill-opacity="0.82"/>
+                <circle cx="0" cy="0" r="1.4" fill="#c8883c" fill-opacity="0.88"/>
+              </g>
+              <path d="M-3,3 C-6,9 -6,18 -5,26" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.75"/>
+              <g transform="translate(-5,15) rotate(145)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#4a8030" fill-opacity="0.72"/></g>
+              <path d="M6,-1 C14,-4 24,-3 34,-4 C42,-3 50,-5 58,-4 C66,-3 74,-5 80,-4" stroke="#3a6025" stroke-width="0.65" fill="none" stroke-opacity="0.48"/>
+              <g transform="translate(34,-4) rotate(-78)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.60"/></g>
+              <g transform="translate(58,-4) rotate(86)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.54"/></g>
+              <g transform="translate(78,-4) rotate(-82)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.46"/></g>
+              <path d="M-4,5 C-8,12 -8,22 -6,32 C-5,42 -8,50 -6,60" stroke="#3a6025" stroke-width="0.65" fill="none" stroke-opacity="0.48"/>
+              <g transform="translate(-6,22) rotate(168)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.58"/></g>
+              <g transform="translate(-6,42) rotate(4)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.50"/></g>
+            </g>
+            <!-- ══ TOP-RIGHT (horizontal mirror) ══ -->
+            <g transform="translate(146,12) scale(-1,1)">
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(0,0,0)"   fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(45,0,0)"  fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(90,0,0)"  fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(135,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(180,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(225,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(270,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(315,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
+              <circle cx="0" cy="0" r="2.0" fill="#c8883c" fill-opacity="0.92"/>
+              <path d="M2,3 C5,8 9,13 11,19 C13,23 15,27 16,32" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.80"/>
+              <g transform="translate(9,14) rotate(35)"><path d="M0,0 C-3.5,-2 -3,-8 0,-10 C3,-8 3.5,-2 0,0 Z" fill="#4a8030" fill-opacity="0.78"/></g>
+              <g transform="translate(15,26) rotate(-20)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#5a9040" fill-opacity="0.72"/></g>
+              <g transform="translate(17,33)">
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(0,0,0)"   fill="#b0c8f0" fill-opacity="0.82"/>
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(72,0,0)"  fill="#b0c8f0" fill-opacity="0.82"/>
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(144,0,0)" fill="#b0c8f0" fill-opacity="0.82"/>
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(216,0,0)" fill="#b0c8f0" fill-opacity="0.82"/>
+                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(288,0,0)" fill="#b0c8f0" fill-opacity="0.82"/>
+                <circle cx="0" cy="0" r="1.4" fill="#c8883c" fill-opacity="0.88"/>
+              </g>
+              <path d="M-3,3 C-6,9 -6,18 -5,26" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.75"/>
+              <g transform="translate(-5,15) rotate(145)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#4a8030" fill-opacity="0.72"/></g>
+              <path d="M6,-1 C14,-4 24,-3 34,-4 C42,-3 50,-5 58,-4 C66,-3 74,-5 80,-4" stroke="#3a6025" stroke-width="0.65" fill="none" stroke-opacity="0.48"/>
+              <g transform="translate(34,-4) rotate(-78)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.60"/></g>
+              <g transform="translate(58,-4) rotate(86)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.54"/></g>
+              <path d="M-4,5 C-8,12 -8,22 -6,32 C-5,42 -8,50 -6,60" stroke="#3a6025" stroke-width="0.65" fill="none" stroke-opacity="0.48"/>
+              <g transform="translate(-6,22) rotate(168)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.58"/></g>
+              <g transform="translate(-6,42) rotate(4)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.50"/></g>
+            </g>
+            <!-- ══ BOTTOM-LEFT accent ══ -->
+            <g transform="translate(7,82)">
+              <path d="M0,0 C3,-5 7,-8 11,-13" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.70"/>
+              <g transform="translate(6,-7) rotate(52)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#4a8030" fill-opacity="0.70"/></g>
+              <g transform="translate(11,-13)">
+                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(0,0,0)"   fill="#f2c8a0" fill-opacity="0.80"/>
+                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(72,0,0)"  fill="#f2c8a0" fill-opacity="0.80"/>
+                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(144,0,0)" fill="#f2c8a0" fill-opacity="0.80"/>
+                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(216,0,0)" fill="#f2c8a0" fill-opacity="0.80"/>
+                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(288,0,0)" fill="#f2c8a0" fill-opacity="0.80"/>
+                <circle cx="0" cy="0" r="1.2" fill="#c8883c" fill-opacity="0.85"/>
+              </g>
+            </g>
+            <!-- ══ BOTTOM-RIGHT subtle (vessel here) ══ -->
+            <g transform="translate(155,83) scale(-1,1)">
+              <path d="M0,0 C3,-4 5,-7 7,-10" stroke="#3a6025" stroke-width="0.70" fill="none" stroke-opacity="0.42"/>
+              <g transform="translate(6,-8) rotate(48)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.46"/></g>
+            </g>
+          </svg>
+          <!-- 3D vessel lives here during photobooth -->
+          <div class="pb-vessel-overlay" id="pb-vessel-overlay"></div>
+        </div>
+      </div>
+      <div class="pb-aim-bottom">
+        <div class="pb-size-btns">
+          <button class="pb-size-btn" id="pb-size-dn" title="Smaller">−</button>
+          <button class="pb-size-btn" id="pb-size-up" title="Bigger">+</button>
+        </div>
+        <button class="pb-capture-btn" id="pb-capture-btn">Capture</button>
+      </div>
+    </div>
+
+    <!-- Phase 2: result + QR -->
+    <div class="pb-phase" id="pb-result-phase">
+      <div class="pb-composite single" id="pb-composite">
+        <img id="pb-composite-img" alt="You and your vessel">
+      </div>
+      <div class="pb-qr-block">
+        <div id="pb-qr"></div>
+        <p class="pb-qr-label">Scan to keep your vessel</p>
+      </div>
+      <div class="pb-actions">
+        <button class="pb-download" id="pb-download">Download composite</button>
+        <button class="pb-retake" id="pb-retake">Retake photo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       THREE.JS VIEWER
+  ══════════════════════════════════════════════════════════════ -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+    import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+
+    const container = document.getElementById('main-3d');
+    const renderer  = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace   = THREE.SRGBColorSpace;
+    renderer.toneMapping        = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.38;
+    container.appendChild(renderer.domElement);
+
+    const scene  = new THREE.Scene();
+    function bgFromPot(rgb){
+      return new THREE.Color(
+        Math.min(rgb[0]*0.36+0.64,1.0),
+        Math.min(rgb[1]*0.36+0.64,1.0),
+        Math.min(rgb[2]*0.36+0.64,1.0)
+      );
+    }
+    scene.background = bgFromPot([0.08,0.04,0.18]);
+
+    const camera = new THREE.PerspectiveCamera(64, 1, 0.1, 100);
+    camera.position.set(0, 0.05, 3.0);
+    camera.lookAt(0, 1.2, 0);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 1.2, 0);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.6;
+    controls.minDistance = 1.5;
+    controls.maxDistance = 10;
+    renderer.domElement.addEventListener('pointerdown', () => controls.autoRotate = false);
+    renderer.domElement.addEventListener('pointerup',   () => controls.autoRotate = true);
+
+    // PMREM environment — soft ambient reflections, much closer to Blender Cycles look
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
+
+    // RectAreaLight matches Blender's area-light shading model
+    RectAreaLightUniformsLib.init();
+    scene.add(new THREE.AmbientLight(0xffffff, 0.04));
+
+    // Shadow-only directional — low intensity, just casts the contact shadow
+    const shadowCaster = new THREE.DirectionalLight(0xffffff, 0.25);
+    shadowCaster.position.set(4,7,3); shadowCaster.castShadow=true;
+    shadowCaster.shadow.mapSize.set(2048,2048); shadowCaster.shadow.bias=-0.0004; shadowCaster.shadow.radius=5;
+    scene.add(shadowCaster);
+
+    const keyL  = new THREE.RectAreaLight(0xffe8c0, 14, 4, 4);
+    keyL.position.set(4,5,3); keyL.lookAt(0,0.5,0); scene.add(keyL);
+    const fillL = new THREE.RectAreaLight(0xb8c8ff, 4.5, 5, 5);
+    fillL.position.set(-4,2,4); fillL.lookAt(0,0.5,0); scene.add(fillL);
+    const topL  = new THREE.RectAreaLight(0xffffff, 5.5, 5, 5);
+    topL.position.set(0,7,0); topL.lookAt(0,0,0); scene.add(topL);
+    const rimL  = new THREE.RectAreaLight(0xffeedd, 2.5, 2, 5);
+    rimL.position.set(-1,4,-5); rimL.lookAt(0,0.5,0); scene.add(rimL);
+
+    const groundMat = new THREE.MeshStandardMaterial({color:0xe0dbd5,roughness:0.90,envMapIntensity:0.4});
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(7,64), groundMat);
+    ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+
+    const PROFILES = {
+      uniformCylinder:[[0,0],[0.58,0],[0.62,0.07],[0.56,0.78],[0.52,0.90],[0.58,0.97],[0.54,1.05]],
+      narrowCylinder: [[0,0],[0.42,0],[0.44,0.07],[0.38,0.82],[0.35,0.94],[0.40,1.00],[0.37,1.14]],
+      bulbous:        [[0,0],[0.78,0],[0.82,0.07],[0.70,0.40],[0.65,0.52],[0.70,0.57],[0.66,0.62]],
+      amphora:        [[0,0],[0.48,0],[0.52,0.06],[0.76,0.22],[0.84,0.44],[0.80,0.62],[0.52,0.80],[0.34,0.90],[0.38,0.96],[0.36,1.02]],
+      pinnedNeck:     [[0,0],[0.38,0],[0.40,0.06],[0.34,0.92],[0.32,1.08],[0.36,1.14]],
+      flaringRim:     [[0,0],[0.70,0],[0.74,0.06],[0.62,0.14],[0.36,0.36],[0.28,0.52],[0.36,0.68],[0.62,0.84],[0.68,0.94],[0.64,1.00]],
+    };
+
+    function mesh(geo,mat,pos=[0,0,0],scale=[1,1,1]){
+      const m=new THREE.Mesh(geo,mat);
+      m.position.set(...pos);m.scale.set(...scale);m.castShadow=true;return m;
+    }
+    function shiftMat(base,delta){
+      const c=base.color.clone();
+      c.r=Math.max(0,Math.min(1,c.r+delta));
+      c.g=Math.max(0,Math.min(1,c.g+delta));
+      c.b=Math.max(0,Math.min(1,c.b+delta));
+      return new THREE.MeshStandardMaterial({color:c,roughness:base.roughness+0.04,side:THREE.DoubleSide,envMapIntensity:base.envMapIntensity||1.8});
+    }
+    function mkMat(rgb,roughness=0.35){
+      return new THREE.MeshStandardMaterial({color:new THREE.Color(rgb[0],rgb[1],rgb[2]),roughness,side:THREE.DoubleSide,envMapIntensity:1.6});
+    }
+
+    function leafGeo(len=0.30,w=0.12){
+      const s=new THREE.Shape();
+      s.moveTo(0,0);
+      s.bezierCurveTo(w*0.58,len*0.08,w*0.55,len*0.72,0,len);
+      s.bezierCurveTo(-w*0.55,len*0.72,-w*0.58,len*0.08,0,0);
+      return new THREE.ShapeGeometry(s,14);
+    }
+    const _lGeo=leafGeo();
+    const _lMat=new THREE.MeshStandardMaterial({color:0x1d5c1d,roughness:0.55,metalness:0.02,side:THREE.DoubleSide,envMapIntensity:1.2});
+
+    let _leafMeshes=[];
+    function addLeaf(group,px,pz,ly,ang){
+      const tilt=Math.PI*0.30;
+      const td=new THREE.Vector3(Math.sin(tilt)*Math.cos(ang),Math.cos(tilt),Math.sin(tilt)*Math.sin(ang));
+      const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),td.normalize());
+      const lf=new THREE.Mesh(_lGeo,_lMat);
+      lf.setRotationFromQuaternion(q);lf.position.set(px,ly,pz);lf.castShadow=true;
+      group.add(lf);
+      _leafMeshes.push({mesh:lf,bx:lf.rotation.x,by:lf.rotation.y,bz:lf.rotation.z,ph:Math.random()*Math.PI*2});
+    }
+
+    function mkPetalGeo(len,w,segs=12){
+      const s=new THREE.Shape();
+      s.moveTo(0,0);
+      s.bezierCurveTo(w*0.72,len*0.10,w*0.68,len*0.76,0,len);
+      s.bezierCurveTo(-w*0.68,len*0.76,-w*0.72,len*0.10,0,0);
+      return new THREE.ShapeGeometry(s,segs);
+    }
+    function mkCupPetalGeo(len,w){
+      const s=new THREE.Shape();
+      s.moveTo(0,0);
+      s.bezierCurveTo(w*0.55,len*0.05,w*0.82,len*0.55,w*0.60,len);
+      s.bezierCurveTo(w*0.30,len*1.10,0,len*1.12,0,len);
+      s.bezierCurveTo(-w*0.30,len*1.10,-w*0.60,len,  -w*0.82,len*0.55);
+      s.bezierCurveTo(-w*0.55,len*0.05,0,0,0,0);
+      return new THREE.ShapeGeometry(s,12);
+    }
+    function addPetals(grp,n,geo,mat,{rad=0,tilt=0,dy=0,phase=0}={}){
+      for(let i=0;i<n;i++){
+        const a=i/n*Math.PI*2+phase;
+        const pg=new THREE.Group(); pg.rotation.y=a; pg.position.y=dy;
+        const p=new THREE.Mesh(geo,mat);
+        p.rotation.x=-Math.PI/2+tilt; p.position.z=rad; p.castShadow=true;
+        pg.add(p); grp.add(pg);
+      }
+    }
+    function grnMat(){
+      return new THREE.MeshStandardMaterial({color:0x2d5a1b,roughness:0.74,side:THREE.DoubleSide,envMapIntensity:0.9});
+    }
+
+    function createFlower(type,pMat,cMat){
+      const g=new THREE.Group();
+      const p2=shiftMat(pMat, 0.12);
+      const p3=shiftMat(pMat,-0.12);
+      const gM=grnMat();
+
+      if(type==='daisy'){
+        addPetals(g,16,mkPetalGeo(0.24,0.058),pMat,{tilt:-0.10});
+        addPetals(g,16,mkPetalGeo(0.22,0.052),p2, {tilt:-0.10,phase:Math.PI/16});
+        g.add(mesh(new THREE.CylinderGeometry(0.068,0.068,0.030,20),cMat));
+
+      }else if(type==='rose'){
+        addPetals(g,5, mkPetalGeo(0.12,0.090),p2, {rad:0.02,tilt:-0.62,dy:0.07});
+        addPetals(g,8, mkPetalGeo(0.17,0.115),pMat,{rad:0.08,tilt:-0.30,dy:0.03});
+        addPetals(g,11,mkPetalGeo(0.17,0.115),p3, {rad:0.16,tilt: 0.04});
+        addPetals(g,13,mkPetalGeo(0.15,0.105),p3, {rad:0.23,tilt: 0.16,dy:-0.02});
+        g.add(mesh(new THREE.SphereGeometry(0.035,8,6),cMat,[0,0.07,0]));
+
+      }else if(type==='tulip'){
+        addPetals(g,3,mkCupPetalGeo(0.30,0.16),pMat,{rad:0.04,tilt:-0.52});
+        addPetals(g,3,mkCupPetalGeo(0.30,0.16),p2, {rad:0.04,tilt:-0.52,phase:Math.PI/3});
+        g.add(mesh(new THREE.SphereGeometry(0.030,7,5),cMat,[0,0.30,0]));
+
+      }else if(type==='peony'){
+        addPetals(g,14,mkPetalGeo(0.19,0.130),p3, {rad:0.22,tilt: 0.12});
+        addPetals(g,10,mkPetalGeo(0.17,0.125),pMat,{rad:0.15,tilt:-0.04,dy:0.05});
+        addPetals(g,7, mkPetalGeo(0.14,0.110),p2, {rad:0.09,tilt:-0.20,dy:0.10});
+        addPetals(g,4, mkPetalGeo(0.10,0.090),p2, {rad:0.04,tilt:-0.42,dy:0.15});
+        g.add(mesh(new THREE.SphereGeometry(0.038,8,6),cMat,[0,0.17,0]));
+
+      }else if(type==='cosmos'){
+        addPetals(g,8,mkPetalGeo(0.25,0.080),pMat,{tilt:-0.06});
+        addPetals(g,8,mkPetalGeo(0.22,0.070),p3, {tilt:-0.06,phase:Math.PI/8});
+        g.add(mesh(new THREE.CylinderGeometry(0.060,0.060,0.026,18),cMat));
+
+      }else if(type==='orchid'){
+        addPetals(g,3,mkPetalGeo(0.22,0.082),p3, {tilt:-0.04,phase:0});
+        addPetals(g,2,mkPetalGeo(0.20,0.148),pMat,{tilt:-0.04,phase:Math.PI/3});
+        const lip=new THREE.Mesh(mkPetalGeo(0.26,0.20),cMat);
+        lip.rotation.x=-Math.PI/2+0.28; lip.castShadow=true; g.add(lip);
+        g.add(mesh(new THREE.SphereGeometry(0.026,6,5),p2,[0,0.04,0]));
+
+      }else if(type==='lily'){
+        addPetals(g,3,mkPetalGeo(0.32,0.120),pMat,{rad:0.02,tilt: 0.22});
+        addPetals(g,3,mkPetalGeo(0.32,0.120),p2, {rad:0.02,tilt: 0.22,phase:Math.PI/3});
+        for(let i=0;i<6;i++){
+          const a=i/6*Math.PI*2;
+          const st=new THREE.Mesh(new THREE.CylinderGeometry(0.005,0.005,0.20,4),gM);
+          st.position.set(Math.cos(a)*0.025,0.10,Math.sin(a)*0.025); st.castShadow=true; g.add(st);
+          g.add(mesh(new THREE.SphereGeometry(0.016,5,4),cMat,[Math.cos(a)*0.048,0.21,Math.sin(a)*0.048]));
+        }
+
+      }else if(type==='sunflower'){
+        addPetals(g,22,mkPetalGeo(0.30,0.052),pMat, {tilt:-0.03});
+        addPetals(g,22,mkPetalGeo(0.27,0.048),p3,   {tilt:-0.03,phase:Math.PI/22});
+        g.add(mesh(new THREE.CylinderGeometry(0.115,0.115,0.038,26),cMat));
+        // seed-disc dots
+        for(let i=0;i<24;i++){const a=i/24*Math.PI*2,r=0.055;
+          g.add(mesh(new THREE.SphereGeometry(0.012,5,4),p3,[Math.cos(a)*r,0.023,Math.sin(a)*r]));}
+
+      }else if(type==='daffodil'){
+        addPetals(g,6,mkPetalGeo(0.24,0.090),p2,{tilt:-0.05});
+        // central trumpet
+        const tpts=[new THREE.Vector2(0.04,0),new THREE.Vector2(0.06,0.04),new THREE.Vector2(0.065,0.08),new THREE.Vector2(0.075,0.12),new THREE.Vector2(0.09,0.14)];
+        const trumpet=new THREE.Mesh(new THREE.LatheGeometry(tpts,24),cMat);
+        trumpet.castShadow=true; g.add(trumpet);
+
+      }else if(type==='iris'){
+        addPetals(g,3,mkPetalGeo(0.26,0.120),pMat,{rad:0.02,tilt:-0.55,phase:0});
+        addPetals(g,3,mkPetalGeo(0.28,0.130),p3,  {rad:0.02,tilt: 0.30,phase:Math.PI/3});
+        g.add(mesh(new THREE.SphereGeometry(0.028,6,5),cMat,[0,0.04,0]));
+
+      }else if(type==='poppy'){
+        addPetals(g,4,mkPetalGeo(0.26,0.190),pMat,{tilt:-0.06});
+        addPetals(g,4,mkPetalGeo(0.24,0.170),p3,  {tilt:-0.06,phase:Math.PI/4});
+        g.add(mesh(new THREE.CylinderGeometry(0.058,0.058,0.030,16),cMat));
+        g.add(mesh(new THREE.SphereGeometry(0.045,7,5),p3,[0,0.025,0]));
+
+      }else if(type==='lotus'){
+        addPetals(g,8, mkCupPetalGeo(0.22,0.110),p3, {rad:0.10,tilt:-0.18});
+        addPetals(g,6, mkCupPetalGeo(0.19,0.100),pMat,{rad:0.06,tilt:-0.35,dy:0.06});
+        addPetals(g,4, mkCupPetalGeo(0.15,0.085),p2, {rad:0.03,tilt:-0.55,dy:0.12});
+        g.add(mesh(new THREE.CylinderGeometry(0.055,0.055,0.025,18),cMat,[0,0.03,0]));
+
+      }else if(type==='chrysanthemum'){
+        for(let layer=0;layer<4;layer++){
+          const n=[20,16,12,8][layer], r=[0.24,0.18,0.12,0.06][layer];
+          const tilt=[-0.05,0.05,0.15,0.30][layer], dy=[0,0.03,0.06,0.10][layer];
+          const m=[pMat,p2,p3,p2][layer];
+          addPetals(g,n,mkPetalGeo(0.18-layer*0.02,0.040),m,{rad:r,tilt,dy,phase:layer*Math.PI/n});
+        }
+        g.add(mesh(new THREE.SphereGeometry(0.030,7,5),cMat,[0,0.13,0]));
+
+      }else if(type==='lavender'){
+        // spike of tiny buds
+        for(let i=0;i<9;i++){
+          const h=i*0.028, scale=0.9-i*0.07;
+          for(let j=0;j<4;j++){const a=j/4*Math.PI*2+i*0.5;
+            const bud=mesh(new THREE.SphereGeometry(0.016*scale,5,4),j%2===0?pMat:p2,
+              [Math.cos(a)*0.022*scale, h+0.04, Math.sin(a)*0.022*scale]);
+            g.add(bud);
+          }
+        }
+        const spike=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.010,0.26,5),gM);
+        spike.position.y=0.13; spike.castShadow=true; g.add(spike);
+
+      }else{
+        // generic wildflower
+        addPetals(g,6,mkPetalGeo(0.21,0.100),pMat,{tilt:-0.10});
+        addPetals(g,6,mkPetalGeo(0.19,0.090),p2,  {tilt:-0.10,phase:Math.PI/6});
+        g.add(mesh(new THREE.SphereGeometry(0.040,7,6),cMat));
+      }
+      return g;
+    }
+
+    function buildPot(params){
+      const{colorRGB=[0.55,0.48,0.38],flowerColorRGB=[0.88,0.72,0.35],
+            silhouette='amphora',roughness=0.30,
+            flowerTypes=['daisy','rose','tulip'],flowerCount=7}=params||{};
+      const profile=PROFILES[silhouette]||PROFILES.amphora;
+      const pts=profile.map(([r,y])=>new THREE.Vector2(r,y));
+      const rimH=Math.max(...profile.map(p=>p[1]));
+      const rimR=profile.reduce((b,p)=>p[1]>=b[1]?p:b,profile[0])[0];
+      const potColor=new THREE.Color(colorRGB[0],colorRGB[1],colorRGB[2]);
+      const accent=potColor.clone();
+      accent.r=Math.min(accent.r+0.18,1);accent.g=Math.min(accent.g+0.15,1);accent.b=Math.min(accent.b+0.10,1);
+      const potMat=new THREE.MeshStandardMaterial({color:potColor,roughness,metalness:0.04,envMapIntensity:2.2});
+      const accMat=new THREE.MeshStandardMaterial({color:accent,roughness:Math.max(roughness-0.12,0.04),envMapIntensity:2.0});
+      const soilMat=new THREE.MeshStandardMaterial({color:0x1e0f06,roughness:0.96,envMapIntensity:0.3});
+      const stemMat=new THREE.MeshStandardMaterial({color:0x2d5a1b,roughness:0.82,envMapIntensity:0.8});
+      const fc=flowerColorRGB;
+      const pMat=new THREE.MeshStandardMaterial({color:new THREE.Color(fc[0],fc[1],fc[2]),roughness:roughness*0.55,side:THREE.DoubleSide,envMapIntensity:1.8});
+      const cMat=new THREE.MeshStandardMaterial({color:new THREE.Color(fc[0]*0.45+0.15,fc[1]*0.28+0.10,fc[2]*0.08+0.03),roughness:0.65,side:THREE.DoubleSide,envMapIntensity:1.4});
+      const group=new THREE.Group();
+      const potGeo=new THREE.LatheGeometry(pts,128);
+      potGeo.computeVertexNormals();
+      const potM=new THREE.Mesh(potGeo,potMat);
+      potM.castShadow=potM.receiveShadow=true;group.add(potM);
+      const rim=new THREE.Mesh(new THREE.TorusGeometry(rimR,0.038,14,80),accMat);
+      rim.position.y=rimH;rim.castShadow=true;group.add(rim);
+      const midH=profile[Math.floor(profile.length*0.4)][1];
+      const midR2=profile.reduce((b,p)=>Math.abs(p[1]-midH)<Math.abs(b[1]-midH)?p:b,profile[0])[0];
+      for(let i=0;i<16;i++){const a=i/16*Math.PI*2;
+        const d=new THREE.Mesh(new THREE.SphereGeometry(0.032,7,5),accMat);
+        d.position.set(Math.cos(a)*(midR2+0.035),midH,Math.sin(a)*(midR2+0.035));
+        d.castShadow=true;group.add(d);}
+      const soil=new THREE.Mesh(new THREE.CylinderGeometry(rimR*0.90,rimR*0.90,0.055,40),soilMat);
+      soil.position.y=rimH-0.18;soil.receiveShadow=true;group.add(soil);
+      const packR=rimR*0.72;
+      for(let i=0;i<flowerCount;i++){
+        const a=i/flowerCount*Math.PI*2+0.4;
+        const sp=packR*(0.12+0.72*((i*7+3)%5)/4);
+        const px=Math.cos(a)*sp,pz=Math.sin(a)*sp;
+        const h=0.32+0.32*((i*3+1)%4)/3+0.10*(i%2);
+        const type=flowerTypes[i%flowerTypes.length];
+        const baseY=rimH-0.16;
+        const stM=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.020,h,6),stemMat);
+        stM.position.set(px,baseY+h/2,pz);stM.castShadow=true;group.add(stM);
+        const sang=Math.atan2(pz,px);
+        [[0.38,1],[0.62,-1]].forEach(([f,s])=>{
+          addLeaf(group,px,pz,baseY+h*f,sang+Math.PI/2*s);
+        });
+        // Vary petal colour per stem for richness
+        const hueShift=(i/flowerCount*0.30-0.15);
+        const varPMat=hueShift===0?pMat:shiftMat(pMat,hueShift);
+        const fl=createFlower(type,varPMat,cMat);
+        fl.position.set(px,baseY+h,pz);fl.castShadow=true;group.add(fl);
+      }
+      return group;
+    }
+
+    let currentPot=null;
+    let _lastPotRGB=[0.08,0.04,0.18];
+    function applyBg(rgb){
+      const bg=bgFromPot(rgb);
+      scene.background=bg;
+      groundMat.color.set(new THREE.Color(bg.r*0.80,bg.g*0.80,bg.b*0.80));
+    }
+    function spawnPot(params){
+      if(currentPot)scene.remove(currentPot);
+      _leafMeshes=[];
+      currentPot=buildPot(params);
+      scene.add(currentPot);
+      controls.autoRotate=true;
+      const rgb=(params||{}).colorRGB||[0.55,0.48,0.38];
+      _lastPotRGB=rgb;
+      if(!window.VESSEL||!window.VESSEL._pb) applyBg(rgb);
+    }
+
+    spawnPot({
+      colorRGB:[0.08,0.04,0.18],flowerColorRGB:[0.62,0.16,0.94],
+      silhouette:'pinnedNeck',roughness:0.70,
+      flowerTypes:['cosmos','daisy','rose'],flowerCount:7,
+    });
+
+    window.VESSEL=window.VESSEL||{};
+    window.VESSEL.updatePot=(p)=>spawnPot(p);
+    window.VESSEL.renderer=renderer;
+    window.VESSEL.ground=ground;
+    window.VESSEL.resizeToContainer=(el)=>{
+      const w=el.clientWidth,h=el.clientHeight;
+      if(!w||!h)return;
+      renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
+    };
+    window.VESSEL.renderHighRes=(w,h)=>{
+      // Render at composite resolution — caller draws THEN calls resizeToContainer
+      renderer.setSize(w,h,false);
+      camera.aspect=w/h; camera.updateProjectionMatrix();
+      renderer.render(scene,camera);
+      // deliberately no restore here — restoring before drawImage was clearing the buffer
+    };
+
+    window.VESSEL.setPbCamera=(on)=>{
+      if(on){
+        scene.background=null;  // transparent so camera shows through
+        groundMat.color.set(0x111111);
+        camera.fov=64; camera.updateProjectionMatrix();
+        camera.position.set(0,0.05,2.6);
+        controls.target.set(0,1.1,0);
+        controls.minDistance=0.5;
+        controls.autoRotate=true;
+        controls.autoRotateSpeed=1.8;
+      } else {
+        applyBg(_lastPotRGB);   // restore pastel background
+        camera.fov=64; camera.updateProjectionMatrix();
+        camera.position.set(0,0.05,3.0);
+        controls.target.set(0,1.2,0);
+        controls.minDistance=1.5;
+        controls.autoRotateSpeed=0.6;
+      }
+      controls.update();
+    };
+
+    let _pbT=0, _introT=0;
+
+    window.VESSEL.startPbIntro=()=>{
+      _introT=0;
+      window.VESSEL._intro=true;
+      if(currentPot){
+        currentPot.position.y=-3.5;
+        currentPot.scale.setScalar(0.04);
+      }
+    };
+
+    function resize(){
+      const parent=renderer.domElement.parentElement||container;
+      const w=parent.clientWidth,h=parent.clientHeight;
+      if(!w||!h)return;
+      renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize',resize);
+    (function loop(){
+      requestAnimationFrame(loop);
+      controls.update();
+      if(window.VESSEL._pb&&currentPot){
+        if(window.VESSEL._intro){
+          // Entrance: rise from below with cubic ease-out
+          _introT=Math.min(_introT+0.024,1.0);
+          const e=1-Math.pow(1-_introT,3);
+          currentPot.position.y=-3.5*(1-e);
+          currentPot.scale.setScalar(0.04+0.96*e);
+          if(_introT>=1.0){
+            window.VESSEL._intro=false;
+            currentPot.position.y=0;
+            currentPot.scale.setScalar(1);
+          }
+        } else {
+          // Idle float after entrance
+          _pbT+=0.014;
+          currentPot.position.y=Math.sin(_pbT)*0.10+Math.sin(_pbT*0.63)*0.05;
+        }
+      } else if(currentPot){
+        // Drift back to rest when leaving photobooth
+        if(Math.abs(currentPot.position.y)>0.001) currentPot.position.y*=0.88;
+        const s=currentPot.scale.x;
+        if(Math.abs(s-1)>0.001) currentPot.scale.setScalar(s+(1-s)*0.14);
+      }
+      // Animate leaves — gentle organic sway
+      const lt=performance.now()*0.00055;
+      _leafMeshes.forEach(l=>{
+        l.mesh.rotation.x=l.bx+Math.sin(lt*1.15+l.ph)*0.09;
+        l.mesh.rotation.z=l.bz+Math.sin(lt*0.82+l.ph+1.4)*0.06;
+      });
+      renderer.render(scene,camera);
+    })();
+  </script>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PAGE LOGIC
+  ══════════════════════════════════════════════════════════════ -->
+  <script>
+    // ── Config — change SERVER to local IP for exhibition ────────────────────
+    const SERVER = 'http://localhost:5050';
+
+    // ── State ────────────────────────────────────────────────────────────────
+    let lastRenderFilename = null;
+    let lastRenderUrl      = null;
+    let capturedDataURL    = null;
+    let pbStream           = null;
+    let leftStream         = null;
+    let leftSwatchTimer    = null;
+
+    // ── Loading ──────────────────────────────────────────────────────────────
+    const PHASES = ['Reading traits','Shaping clay','Growing stems','Opening petals','Casting light','Rendering','Finishing touches','Almost there'];
+    let phaseTimer=null, phaseIdx=0;
+
+    function startLoading(){
+      const plant=document.querySelector('.vl-plant');
+      const old=plant.querySelector('svg');
+      plant.replaceChild(old.cloneNode(true),old);
+      phaseIdx=0;
+      const ph=document.getElementById('loading-phase');
+      ph.style.opacity='1'; ph.textContent=PHASES[0];
+      document.getElementById('gen-loading').classList.add('active');
+      phaseTimer=setInterval(()=>{
+        phaseIdx=(phaseIdx+1)%PHASES.length;
+        ph.style.opacity='0';
+        setTimeout(()=>{ph.textContent=PHASES[phaseIdx];ph.style.opacity='1';},380);
+      },3500);
+    }
+
+    function stopLoading(){
+      document.getElementById('gen-loading').classList.remove('active');
+      clearInterval(phaseTimer);phaseTimer=null;
+    }
+
+    function showError(msg){
+      stopLoading();
+      const el=document.getElementById('gen-error');
+      el.textContent=msg.includes('Failed to fetch')?
+        'Cannot reach API — make sure api.py is running': msg;
+      el.style.display='block';
+      document.getElementById('gen-status').textContent='';
+    }
+
+    function showResult(data){
+      stopLoading();
+      if(window.VESSEL&&data.pot_params) window.VESSEL.updatePot(data.pot_params);
+
+      lastRenderFilename=data.filename;
+      lastRenderUrl=`${SERVER}/renders/${data.filename}`;
+      const traits=(data.traits||[]).join(' · ');
+
+      // Render strip
+      document.getElementById('strip-img').src=lastRenderUrl;
+      document.getElementById('strip-traits').textContent=traits;
+      document.getElementById('render-strip').classList.add('visible');
+      document.getElementById('photobooth-btn').style.display='';
+
+      // Add to recents
+      addToRecents(lastRenderUrl, traits);
+
+      document.getElementById('gen-status').textContent='';
+      document.getElementById('gen-error').style.display='none';
+    }
+
+    function addToRecents(url, label){
+      const scroll=document.getElementById('recents-scroll');
+      const cell=document.createElement('div');
+      cell.className='recent-cell';
+      const img=document.createElement('img');
+      img.src=url; img.alt=label;
+      const cap=document.createElement('div');
+      cap.className='recent-cell-label'; cap.textContent=label||'—';
+      cell.appendChild(img); cell.appendChild(cap);
+      scroll.insertBefore(cell, scroll.firstChild);
+      // Scroll to show the new cell
+      scroll.scrollTo({left:0,behavior:'smooth'});
+    }
+
+    // ── Mode tabs ────────────────────────────────────────────────────────────
+    document.querySelectorAll('.mode-tab').forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-'+tab.dataset.panel).classList.add('active');
+        const hero=document.querySelector('.hero');
+        if(tab.dataset.panel==='scan') hero.classList.add('scan-mode');
+        else hero.classList.remove('scan-mode');
+      });
+    });
+
+    document.getElementById('scan-back-btn').addEventListener('click',()=>{
+      document.querySelector('.hero').classList.remove('scan-mode');
+      document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
+      document.querySelector('[data-panel="type"]').classList.add('active');
+      document.getElementById('panel-type').classList.add('active');
+    });
+
+    // ── Text generate ────────────────────────────────────────────────────────
+    const genBtn=document.getElementById('gen-btn');
+    const mainInput=document.getElementById('main-input');
+
+    async function generateFromText(){
+      const raw=mainInput.value.trim();
+      const label=document.getElementById('main-label').value.trim();
+      if(!raw) return;
+      genBtn.disabled=true;
+      document.getElementById('gen-error').style.display='none';
+      document.getElementById('gen-status').textContent='shaping…';
+      document.getElementById('render-strip').classList.remove('visible');
+      startLoading();
+      try{
+        const res=await fetch(`${SERVER}/generate`,{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({traits:raw,label}),
+        });
+        const data=await res.json();
+        if(!data.ok) throw new Error(data.error||'Generation failed');
+        showResult(data);
+      }catch(e){showError(e.message);}
+      finally{genBtn.disabled=false;}
+    }
+
+    genBtn.addEventListener('click',generateFromText);
+    mainInput.addEventListener('keydown',e=>{if(e.key==='Enter')generateFromText();});
+
+    // ── Scan (left panel camera) ─────────────────────────────────────────────
+    function sampleColors(vid,n=5){
+      const c=document.createElement('canvas');c.width=24;c.height=24;
+      const x=c.getContext('2d');
+      x.drawImage(vid,vid.videoWidth*0.20,vid.videoHeight*0.45,
+                  vid.videoWidth*0.60,vid.videoHeight*0.55,0,0,24,24);
+      const px=x.getImageData(0,0,24,24).data;
+      const step=Math.floor(576/n),cols=[];
+      for(let i=0;i<n;i++){const o=i*step*4;cols.push([px[o],px[o+1],px[o+2]]);}
+      return cols;
+    }
+
+    document.getElementById('left-cam-start').addEventListener('click',async()=>{
+      try{
+        leftStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+        document.getElementById('left-video').srcObject=leftStream;
+        document.getElementById('left-cam-start').style.display='none';
+        const sb=document.getElementById('snap-btn');
+        sb.style.display='inline-block';sb.disabled=false;
+        document.getElementById('left-swatches').style.display='flex';
+        leftSwatchTimer=setInterval(()=>{
+          const vid=document.getElementById('left-video');
+          if(vid.readyState>=2){
+            sampleColors(vid).forEach((rgb,i)=>{
+              const el=document.getElementById('lsw'+i);
+              if(el)el.style.background=`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+            });
+          }
+        },500);
+      }catch(e){showError('Camera access denied.');}
+    });
+
+    document.getElementById('snap-btn').addEventListener('click',async()=>{
+      if(!leftStream)return;
+      clearInterval(leftSwatchTimer);
+      const sb=document.getElementById('snap-btn');
+      sb.disabled=true;
+      document.getElementById('gen-error').style.display='none';
+      document.getElementById('render-strip').classList.remove('visible');
+      document.getElementById('result-reveal-btn').classList.remove('visible');
+      const vid=document.getElementById('left-video');
+      const canvas=document.getElementById('left-canvas');
+      canvas.width=vid.videoWidth;canvas.height=vid.videoHeight;
+      const ctx=canvas.getContext('2d');
+      ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(vid,0,0);
+      capturedDataURL=canvas.toDataURL('image/jpeg',0.85);
+      // Camera stays live — no freeze
+      startLoading();
+      const label=document.getElementById('scan-label').value.trim();
+      try{
+        const res=await fetch(`${SERVER}/scan`,{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({image:capturedDataURL,label}),
+        });
+        const data=await res.json();
+        if(!data.ok)throw new Error(data.error||'Scan failed');
+        stopLoading();
+        if(window.VESSEL&&data.pot_params) window.VESSEL.updatePot(data.pot_params);
+        lastRenderFilename=data.filename;
+        lastRenderUrl=`${SERVER}/renders/${data.filename}`;
+        const traits=(data.traits||[]).join(' · ');
+        document.getElementById('strip-img').src=lastRenderUrl;
+        document.getElementById('strip-traits').textContent=traits;
+        document.getElementById('photobooth-btn').style.display='';
+        addToRecents(lastRenderUrl,traits);
+        // Show Result button — 3D already updated, Blender render on demand
+        document.getElementById('result-reveal-btn').classList.add('visible');
+      }catch(e){
+        stopLoading();
+        showError(e.message);
+      }finally{sb.disabled=false;}
+    });
+
+    document.getElementById('result-reveal-btn').addEventListener('click',()=>{
+      document.getElementById('render-strip').classList.add('visible');
+      document.getElementById('result-reveal-btn').classList.remove('visible');
+    });
+
+    // ── Photobooth ───────────────────────────────────────────────────────────
+    async function pbAutoAnalyse(vid){
+      await new Promise(r=>setTimeout(r,1400));
+      if(!vid.srcObject||vid.videoWidth<10) return;
+      const c=document.createElement('canvas');
+      c.width=Math.min(640,vid.videoWidth); c.height=Math.min(360,vid.videoHeight);
+      const cx=c.getContext('2d');
+      cx.translate(c.width,0); cx.scale(-1,1);
+      cx.drawImage(vid,0,0,c.width,c.height);
+      const imgData=c.toDataURL('image/jpeg',0.72);
+      try{
+        const res=await fetch(`${SERVER}/analyse`,{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({image:imgData}),
+        });
+        const d=await res.json();
+        if(d.ok&&d.pot_params&&window.VESSEL) window.VESSEL.updatePot(d.pot_params);
+      }catch(_){}
+    }
+
+    const pbModal=document.getElementById('pb-modal');
+
+    document.getElementById('photobooth-btn').addEventListener('click',async()=>{
+      if(!lastRenderUrl) return;
+      pbModal.classList.add('open');
+      showPbPhase('aim');
+      if(window.VESSEL){
+        const ov=document.getElementById('pb-vessel-overlay');
+        ov.appendChild(window.VESSEL.renderer.domElement);
+
+        // Drag handle on top of canvas so user can reposition vessel
+        let _handle=document.getElementById('pb-vessel-handle');
+        if(!_handle){
+          _handle=document.createElement('div');
+          _handle.id='pb-vessel-handle';
+          _handle.className='pb-vessel-handle';
+          const hint=document.createElement('span');
+          hint.className='pb-vessel-hint';
+          hint.textContent='drag · pinch to resize';
+          _handle.appendChild(hint);
+          ov.appendChild(_handle);
+        }
+
+        // Reset overlay transform
+        let _ovX=0,_ovY=0,_ovS=1;
+        ov.style.transform='';
+        ov.style.transformOrigin='bottom right';
+        function _setOvT(){ov.style.transform=`translate(${_ovX}px,${_ovY}px) scale(${_ovS})`;}
+
+        // Drag
+        let _dStart=null;
+        _handle.onpointerdown=e=>{
+          e.preventDefault();
+          _dStart={x:e.clientX-_ovX,y:e.clientY-_ovY};
+          _handle.setPointerCapture(e.pointerId);
+          _handle.classList.add('dragging');
+        };
+        _handle.onpointermove=e=>{
+          if(!_dStart)return;
+          _ovX=e.clientX-_dStart.x; _ovY=e.clientY-_dStart.y; _setOvT();
+        };
+        _handle.onpointerup=()=>{_dStart=null;_handle.classList.remove('dragging');};
+
+        // Scroll to scale
+        _handle.addEventListener('wheel',e=>{
+          e.preventDefault();
+          _ovS=Math.max(0.35,Math.min(3.0,_ovS-e.deltaY*0.0012));
+          _setOvT();
+        },{passive:false});
+
+        // Pinch to scale
+        let _pinch0=null;
+        _handle.addEventListener('touchstart',e=>{
+          if(e.touches.length===2){
+            _pinch0={dist:Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
+                                     e.touches[0].clientY-e.touches[1].clientY),s:_ovS};
+            e.preventDefault();
+          }
+        },{passive:false});
+        _handle.addEventListener('touchmove',e=>{
+          if(e.touches.length===2&&_pinch0){
+            const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
+                               e.touches[0].clientY-e.touches[1].clientY);
+            _ovS=Math.max(0.35,Math.min(3.0,_pinch0.s*(d/_pinch0.dist)));
+            _setOvT(); e.preventDefault();
+          }
+        },{passive:false});
+        _handle.addEventListener('touchend',()=>{_pinch0=null;});
+
+        // +/- buttons
+        document.getElementById('pb-size-up').onclick=()=>{_ovS=Math.min(3.0,_ovS+0.12);_setOvT();};
+        document.getElementById('pb-size-dn').onclick=()=>{_ovS=Math.max(0.35,_ovS-0.12);_setOvT();};
+
+        if(window.VESSEL.ground) window.VESSEL.ground.visible=false;
+        window.VESSEL._pb=true;
+        window.VESSEL.setPbCamera(true);
+        setTimeout(()=>{
+          window.VESSEL.resizeToContainer(ov);
+          window.VESSEL.startPbIntro();
+        },80);
+      }
+      try{
+        pbStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+        const vid=document.getElementById('pb-video');
+        vid.srcObject=pbStream;
+        pbAutoAnalyse(vid);
+      }catch(e){
+        alert('Camera access needed for photobooth.');
+        closePb();
+      }
+    });
+
+    document.getElementById('pb-close').addEventListener('click',closePb);
+
+    function closePb(){
+      pbModal.classList.remove('open');
+      if(pbStream){pbStream.getTracks().forEach(t=>t.stop());pbStream=null;}
+      if(window.VESSEL){
+        const ov=document.getElementById('pb-vessel-overlay');
+        // Remove drag handle so it doesn't accumulate on re-open
+        const h=document.getElementById('pb-vessel-handle');
+        if(h) h.remove();
+        if(ov) ov.style.transform='';
+        const mainDiv=document.getElementById('main-3d');
+        mainDiv.appendChild(window.VESSEL.renderer.domElement);
+        if(window.VESSEL.ground) window.VESSEL.ground.visible=true;
+        window.VESSEL._pb=false;
+        window.VESSEL.setPbCamera(false);
+        setTimeout(()=>window.VESSEL.resizeToContainer(mainDiv),60);
+      }
+      showPbPhase('aim');
+    }
+
+    function showPbPhase(name){
+      document.querySelectorAll('.pb-phase').forEach(p=>p.classList.remove('active'));
+      if(name==='aim') document.getElementById('pb-aim-phase').classList.add('active');
+      if(name==='result') document.getElementById('pb-result-phase').classList.add('active');
+    }
+
+    // Countdown capture
+    document.getElementById('pb-capture-btn').addEventListener('click',()=>{
+      const btn=document.getElementById('pb-capture-btn');
+      const cd=document.getElementById('pb-countdown');
+      btn.disabled=true;
+      cd.style.display='block';
+      let n=3;
+      cd.textContent=n;
+      const t=setInterval(()=>{
+        n--;
+        if(n>0){cd.textContent=n;}
+        else{
+          clearInterval(t);
+          cd.style.display='none';
+          btn.disabled=false;
+          capturePhotobooth();
+        }
+      },1000);
+    });
+
+    async function capturePhotobooth(){
+      const vid=document.getElementById('pb-video');
+      const W=vid.videoWidth||1280, H=vid.videoHeight||720;
+      const canvas=document.getElementById('pb-canvas');
+      canvas.width=W; canvas.height=H;
+      const ctx=canvas.getContext('2d');
+
+      // Draw mirrored camera (fills full frame)
+      ctx.save();
+      ctx.translate(W,0); ctx.scale(-1,1);
+      ctx.drawImage(vid,0,0,W,H);
+      ctx.restore();
+
+      // High-res vessel render — position derived from where the overlay actually is on screen
+      if(window.VESSEL&&window.VESSEL.renderHighRes){
+        const inner=document.querySelector('.pb-aim-inner');
+        const ov=document.getElementById('pb-vessel-overlay');
+        const iR=inner?inner.getBoundingClientRect():{left:0,top:0,width:W,height:H};
+        const oR=ov?ov.getBoundingClientRect():{left:W*0.64,top:H*0.10,right:W,bottom:H};
+        const sx=W/iR.width, sy=H/iR.height;
+        const oLeft=Math.max(0,Math.round((oR.left-iR.left)*sx));
+        const oTop =Math.max(0,Math.round((oR.top -iR.top )*sy));
+        const oW=Math.min(W-oLeft,Math.round(oR.width*sx));
+        const oH=Math.min(H-oTop, Math.round(oR.height*sy));
+        window.VESSEL.renderHighRes(oW,oH);
+        ctx.drawImage(window.VESSEL.renderer.domElement,oLeft,oTop,oW,oH);
+        if(ov) window.VESSEL.resizeToContainer(ov);
+      }
+
+      // Draw floral frame onto composite
+      const frameSvg=document.getElementById('pb-frame-svg');
+      if(frameSvg){
+        try{
+          const svgStr=new XMLSerializer().serializeToString(frameSvg);
+          const blob=new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'});
+          const url=URL.createObjectURL(blob);
+          await new Promise(res=>{
+            const img=new Image();
+            img.onload=()=>{ctx.drawImage(img,0,0,W,H);URL.revokeObjectURL(url);res();};
+            img.onerror=()=>{URL.revokeObjectURL(url);res();};
+            img.src=url;
+          });
+        }catch(e){}
+      }
+
+      const compositeDataURL=canvas.toDataURL('image/jpeg',0.92);
+
+      // Show in result phase as single composite image
+      document.getElementById('pb-composite-img').src=compositeDataURL;
+
+      // Save to API for QR
+      let qrUrl=lastRenderUrl;
+      try{
+        const res=await fetch(`${SERVER}/photobooth`,{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({composite:compositeDataURL}),
+        });
+        const data=await res.json();
+        if(data.ok) qrUrl=data.render_url||`${SERVER}/renders/${data.filename}`;
+      }catch(e){}
+
+      const qrEl=document.getElementById('pb-qr');
+      qrEl.innerHTML='';
+      new QRCode(qrEl,{
+        text:qrUrl, width:160, height:160,
+        colorDark:'#000000', colorLight:'#ffffff',
+        correctLevel:QRCode.CorrectLevel.M,
+      });
+
+      document.getElementById('pb-download').onclick=()=>{
+        const a=document.createElement('a');
+        a.href=compositeDataURL;
+        a.download=`vessel-${Date.now()}.jpg`;
+        a.click();
+      };
+
+      showPbPhase('result');
+    }
+
+    document.getElementById('pb-retake').addEventListener('click',()=>{
+      showPbPhase('aim');
+    });
+
+    function loadImage(src){
+      return new Promise((res,rej)=>{
+        const img=new Image();
+        img.crossOrigin='anonymous';
+        img.onload=()=>res(img);
+        img.onerror=rej;
+        img.src=src;
+      });
+    }
+  </script>
+
+</body>
+</html>
