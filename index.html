@@ -1707,7 +1707,7 @@
       if(window.VESSEL&&data.pot_params) window.VESSEL.updatePot(data.pot_params);
 
       lastRenderFilename=data.filename;
-      lastRenderUrl=`${SERVER}/renders/${data.filename}`;
+      lastRenderUrl=data.image_data||`${SERVER}/renders/${data.filename}`;
       const traits=(data.traits||[]).join(' · ');
 
       // Render strip
