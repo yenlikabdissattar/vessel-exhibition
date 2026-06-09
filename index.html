@@ -713,6 +713,40 @@
       color: rgba(255,255,255,0.45);
       text-align: center;
     }
+    .pb-qr-timer {
+      position: relative;
+      width: 54px;
+      height: 54px;
+    }
+    .pb-qr-timer svg { transform: rotate(-90deg); display: block; }
+    .pb-qr-timer-track { fill: none; stroke: rgba(255,255,255,0.10); stroke-width: 3; }
+    .pb-qr-timer-ring {
+      fill: none;
+      stroke: rgba(255,255,255,0.50);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 144.51;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear;
+    }
+    .pb-qr-timer-num {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.60);
+    }
+    .pb-qr-expire {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.44rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.30);
+      text-align: center;
+    }
 
     .pb-actions {
       display: flex;
@@ -1468,6 +1502,14 @@
       <div class="pb-qr-block">
         <div id="pb-qr"></div>
         <p class="pb-qr-label">Scan to keep your vessel</p>
+        <div class="pb-qr-timer" id="pb-qr-timer">
+          <svg width="54" height="54" viewBox="0 0 54 54">
+            <circle class="pb-qr-timer-track" cx="27" cy="27" r="23"/>
+            <circle class="pb-qr-timer-ring"  cx="27" cy="27" r="23" id="pb-qr-ring"/>
+          </svg>
+          <div class="pb-qr-timer-num" id="pb-qr-num">10</div>
+        </div>
+        <p class="pb-qr-expire">link expires soon</p>
       </div>
       <div class="pb-actions">
         <button class="pb-download" id="pb-download">Download composite</button>
@@ -2385,18 +2427,40 @@
       showPbPhase('result');
 
       // Auto-restart for next visitor
-      let secs = 10;
-      const bar = document.getElementById('pb-restart-bar');
+      const RESTART_SECS = 10;
+      const circumference = 144.51; // 2π × 23
+      let secs = RESTART_SECS;
+      const bar     = document.getElementById('pb-restart-bar');
+      const qrRing  = document.getElementById('pb-qr-ring');
+      const qrNum   = document.getElementById('pb-qr-num');
+      function updateQrTimer(s){
+        if(qrNum)  qrNum.textContent = s;
+        if(qrRing) qrRing.style.strokeDashoffset = circumference * (1 - s / RESTART_SECS);
+      }
+      updateQrTimer(secs);
       bar.textContent = `Restarting in ${secs}…`;
       const restartTimer = setInterval(()=>{
         secs--;
-        if(secs > 0){ bar.textContent = `Restarting in ${secs}…`; }
-        else{ clearInterval(restartTimer); window.location.reload(); }
+        if(secs > 0){
+          bar.textContent = `Restarting in ${secs}…`;
+          updateQrTimer(secs);
+        } else {
+          clearInterval(restartTimer);
+          window.location.reload();
+        }
       }, 1000);
 
       // Cancel restart if user interacts
-      document.getElementById('pb-retake').addEventListener('click', ()=>{ clearInterval(restartTimer); bar.textContent=''; }, {once:true});
-      document.getElementById('pb-download').addEventListener('click', ()=>{ clearInterval(restartTimer); bar.textContent=''; }, {once:true});
+      document.getElementById('pb-retake').addEventListener('click', ()=>{
+        clearInterval(restartTimer);
+        bar.textContent='';
+        if(qrRing) qrRing.style.stroke='rgba(255,255,255,0.20)';
+      }, {once:true});
+      document.getElementById('pb-download').addEventListener('click', ()=>{
+        clearInterval(restartTimer);
+        bar.textContent='';
+        if(qrRing) qrRing.style.stroke='rgba(255,255,255,0.20)';
+      }, {once:true});
     }
 
     document.getElementById('pb-retake').addEventListener('click',()=>{
