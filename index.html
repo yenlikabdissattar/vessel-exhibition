@@ -900,9 +900,112 @@
       display: block;
       margin: 0 auto;
     }
+    /* ── LANDING OVERLAY ────────────────────────────────────────────────────── */
+    .landing {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.7s ease;
+    }
+    .landing.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .landing-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      max-width: 560px;
+      padding: 3rem;
+    }
+    .landing-word {
+      font-family: 'Bodoni Moda', serif;
+      font-size: clamp(4rem, 12vw, 8rem);
+      font-weight: 400;
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+      color: var(--cream);
+      margin-bottom: 2rem;
+    }
+    .landing-desc {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(1.1rem, 3vw, 1.45rem);
+      line-height: 1.65;
+      color: rgba(245,243,238,0.65);
+      margin-bottom: 3rem;
+      max-width: 380px;
+    }
+    .landing-desc em { font-style: italic; color: var(--cream); }
+    .landing-options {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+    }
+    .landing-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: none;
+      border: 1px solid rgba(245,243,238,0.22);
+      color: var(--cream);
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 1.1rem 1.6rem;
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s;
+      text-align: left;
+    }
+    .landing-btn:hover { border-color: var(--cream); background: rgba(245,243,238,0.05); }
+    .landing-arrow {
+      font-size: 1.1rem;
+      display: inline-block;
+      animation: arrowPulse 1.4s ease-in-out infinite;
+    }
+    @keyframes arrowPulse {
+      0%,100% { transform: translateX(0); }
+      50%      { transform: translateX(5px); }
+    }
+    .landing-tap {
+      margin-top: 2.4rem;
+      font-size: 0.44rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245,243,238,0.18);
+    }
   </style>
 </head>
 <body>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       LANDING OVERLAY
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="landing" id="landing">
+    <div class="landing-inner">
+      <div class="landing-word">VESSEL</div>
+      <p class="landing-desc">
+        Type your personality — or let the camera read you.<br>
+        <em>You'll get a ceramic flower pot that is entirely yours.</em>
+      </p>
+      <div class="landing-options">
+        <button class="landing-btn" id="lo-type">
+          <span class="landing-arrow">→</span>
+          Write your traits
+        </button>
+        <button class="landing-btn" id="lo-scan">
+          <span class="landing-arrow">→</span>
+          Scan yourself
+        </button>
+      </div>
+      <p class="landing-tap">or tap anywhere to begin</p>
+    </div>
+  </div>
 
   <!-- ══════════════════════════════════════════════════════════════
        HERO — full screen
@@ -2122,6 +2225,21 @@
     document.getElementById('pb-retake').addEventListener('click',()=>{
       showPbPhase('aim');
     });
+
+    // ── Landing overlay ──────────────────────────────────────────────────────
+    function dismissLanding(mode){
+      const el=document.getElementById('landing');
+      el.classList.add('hide');
+      setTimeout(()=>el.remove(), 700);
+      if(mode==='scan'){
+        document.querySelector('[data-panel="scan"]').click();
+      } else {
+        setTimeout(()=>document.getElementById('main-input').focus(), 750);
+      }
+    }
+    document.getElementById('lo-type').addEventListener('click', e=>{e.stopPropagation();dismissLanding('type');});
+    document.getElementById('lo-scan').addEventListener('click', e=>{e.stopPropagation();dismissLanding('scan');});
+    document.getElementById('landing').addEventListener('click', ()=>dismissLanding('type'));
 
     function loadImage(src){
       return new Promise((res,rej)=>{
