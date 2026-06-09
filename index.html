@@ -745,6 +745,43 @@
     }
     .pb-retake:hover { border-color: #fff; color: #fff; }
 
+    /* ── RESPONSIVE ─────────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto 1fr;
+        height: auto;
+        min-height: 100svh;
+      }
+      .hero-left {
+        border-right: none;
+        border-bottom: 1px solid var(--rule);
+        padding: 1.6rem 1.4rem 1.4rem;
+      }
+      .hero-right {
+        height: 60vw;
+        min-height: 320px;
+        max-height: 520px;
+      }
+      #main-3d { flex: unset; height: 100%; }
+      .wordmark { font-size: clamp(2.6rem, 10vw, 4rem); }
+      .about-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .about-col { border-right: none; border-bottom: 1px solid #D8D5CE; }
+      .about-col:last-child { border-bottom: none; }
+      .process-row {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      .process-col:first-child { display: none; }
+      .process-col { border-bottom: 1px solid #D8D5CE; }
+      .sec-header { grid-template-columns: 1fr; gap: 0.4rem; }
+    }
+    @media (max-width: 600px) {
+      .process-row { grid-template-columns: 1fr !important; }
+      .hero-right { height: 70vw; max-height: 380px; }
+    }
+
     /* ── SCAN MODE: full-panel camera ───────────────────────────────────────── */
     .hero.scan-mode {
       grid-template-columns: 1fr 1fr;
@@ -985,33 +1022,7 @@
       <span class="sec-num">Recents</span>
       <span class="sec-title">Vessels Generated Today</span>
     </div>
-    <div class="recents-scroll" id="recents-scroll">
-      <!-- pre-loaded archive cells -->
-      <div class="recent-cell">
-        <img src="../Blender x Claude/renders/flower_pot_bubbly_cute2.png" alt="bubbly">
-        <div class="recent-cell-label">Bubbly · Cute</div>
-      </div>
-      <div class="recent-cell">
-        <img src="../Blender x Claude/renders/flower_pot_angry.png" alt="angry">
-        <div class="recent-cell-label">Angry</div>
-      </div>
-      <div class="recent-cell">
-        <img src="../Blender x Claude/renders/flower_pot_grumpy.png" alt="grumpy">
-        <div class="recent-cell-label">Grumpy</div>
-      </div>
-      <div class="recent-cell">
-        <img src="../Blender x Claude/renders/flower_pot_personality.png" alt="personality">
-        <div class="recent-cell-label">Personality</div>
-      </div>
-      <div class="recent-cell">
-        <img src="../Blender x Claude/renders/flower_pots_mood.png" alt="mood">
-        <div class="recent-cell-label">Mood</div>
-      </div>
-      <div class="recent-cell">
-        <img src="../Blender x Claude/renders/flower_pots_v5.png" alt="study">
-        <div class="recent-cell-label">Study</div>
-      </div>
-    </div>
+    <div class="recents-scroll" id="recents-scroll"></div>
   </section>
 
   <!-- ══════════════════════════════════════════════════════════════
@@ -1600,6 +1611,24 @@
 
     let _pbT=0, _introT=0;
 
+    window.VESSEL.snapRender=(w=1024,h=1024)=>{
+      const savedPos=camera.position.clone();
+      const savedTarget=controls.target.clone();
+      const savedAspect=camera.aspect;
+      camera.position.set(0,0.05,3.0);
+      controls.target.set(0,1.2,0);
+      camera.lookAt(0,1.2,0);
+      camera.aspect=w/h; camera.updateProjectionMatrix();
+      renderer.setSize(w,h,false);
+      renderer.render(scene,camera);
+      const url=renderer.domElement.toDataURL('image/png');
+      camera.position.copy(savedPos);
+      controls.target.copy(savedTarget);
+      camera.aspect=savedAspect; camera.updateProjectionMatrix();
+      window.VESSEL.resizeToContainer(document.getElementById('main-3d'));
+      return url;
+    };
+
     window.VESSEL.startPbIntro=()=>{
       _introT=0;
       window.VESSEL._intro=true;
@@ -1658,8 +1687,8 @@
   ══════════════════════════════════════════════════════════════ -->
   <script>
     // ── Config — change SERVER to local IP for exhibition ────────────────────
-    const SERVER = 'https://smart-mugs-say.loca.lt';
-    const API_HEADERS = {'Content-Type':'application/json','bypass-tunnel-reminder':'true'};
+    const SERVER = '';
+    const API_HEADERS = {'Content-Type':'application/json'};
 
     // ── State ────────────────────────────────────────────────────────────────
     let lastRenderFilename = null;
@@ -1669,8 +1698,20 @@
     let leftStream         = null;
     let leftSwatchTimer    = null;
 
+    // ── Three.js snapshot ────────────────────────────────────────────────────
+    function captureVesselRender(){
+      return new Promise(resolve=>{
+        let f=0;
+        function tick(){
+          if(f++<4){requestAnimationFrame(tick);return;}
+          resolve(window.VESSEL&&window.VESSEL.snapRender?window.VESSEL.snapRender():null);
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+
     // ── Loading ──────────────────────────────────────────────────────────────
-    const PHASES = ['Reading traits','Shaping clay','Growing stems','Opening petals','Casting light','Rendering','Finishing touches','Almost there'];
+    const PHASES = ['Reading traits','Shaping clay','Growing stems','Opening petals','Almost there'];
     let phaseTimer=null, phaseIdx=0;
 
     function startLoading(){
@@ -1702,23 +1743,18 @@
       document.getElementById('gen-status').textContent='';
     }
 
-    function showResult(data){
+    async function showResult(data){
       stopLoading();
       if(window.VESSEL&&data.pot_params) window.VESSEL.updatePot(data.pot_params);
-
-      lastRenderFilename=data.filename;
-      lastRenderUrl=data.image_data||`${SERVER}/renders/${data.filename}`;
       const traits=(data.traits||[]).join(' · ');
-
-      // Render strip
+      const renderDataURL=await captureVesselRender();
+      lastRenderUrl=renderDataURL||'';
+      lastRenderFilename=`vessel_${Date.now()}.png`;
       document.getElementById('strip-img').src=lastRenderUrl;
       document.getElementById('strip-traits').textContent=traits;
       document.getElementById('render-strip').classList.add('visible');
       document.getElementById('photobooth-btn').style.display='';
-
-      // Add to recents
-      addToRecents(lastRenderUrl, traits);
-
+      addToRecents(lastRenderUrl,traits);
       document.getElementById('gen-status').textContent='';
       document.getElementById('gen-error').style.display='none';
     }
@@ -1844,14 +1880,14 @@
         if(!data.ok)throw new Error(data.error||'Scan failed');
         stopLoading();
         if(window.VESSEL&&data.pot_params) window.VESSEL.updatePot(data.pot_params);
-        lastRenderFilename=data.filename;
-        lastRenderUrl=`${SERVER}/renders/${data.filename}`;
         const traits=(data.traits||[]).join(' · ');
+        const renderDataURL=await captureVesselRender();
+        lastRenderUrl=renderDataURL||'';
+        lastRenderFilename=`vessel_scan_${Date.now()}.png`;
         document.getElementById('strip-img').src=lastRenderUrl;
         document.getElementById('strip-traits').textContent=traits;
         document.getElementById('photobooth-btn').style.display='';
         addToRecents(lastRenderUrl,traits);
-        // Show Result button — 3D already updated, Blender render on demand
         document.getElementById('result-reveal-btn').classList.add('visible');
       }catch(e){
         stopLoading();
