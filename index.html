@@ -51,25 +51,25 @@
     .hero-left {
       display: flex;
       flex-direction: column;
-      padding: 2.4rem 2.6rem 2.4rem;
+      padding: 3rem 3rem 2.4rem;
       border-right: 1px solid var(--rule);
       overflow: hidden;
     }
 
     .wordmark {
       font-family: 'Bodoni Moda', serif;
-      font-size: clamp(3.2rem, 6vw, 5.5rem);
+      font-size: clamp(3.8rem, 6vw, 6rem);
       font-weight: 400;
       line-height: 0.90;
       letter-spacing: -0.01em;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.6rem;
     }
     .tagline {
-      font-size: 0.58rem;
+      font-size: 0.56rem;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: rgba(245,243,238,0.38);
-      margin-bottom: 2rem;
+      color: rgba(245,243,238,0.32);
+      margin-bottom: 2.6rem;
     }
 
     /* Mode tabs */
@@ -96,7 +96,7 @@
     }
     .mode-tab.active { color: var(--cream); border-bottom-color: var(--cream); }
     .mode-panel { display: none; }
-    .mode-panel.active { display: flex; flex-direction: column; gap: 1rem; }
+    .mode-panel.active { display: flex; flex-direction: column; gap: 1.4rem; }
 
     /* Fields */
     .field-label {
@@ -227,14 +227,14 @@
     /* Traits hint */
     .trait-hint {
       margin-top: auto;
-      padding-top: 1.6rem;
+      padding-top: 1.8rem;
       border-top: 1px solid var(--rule);
-      font-size: 0.50rem;
-      letter-spacing: 0.06em;
-      color: rgba(245,243,238,0.25);
-      line-height: 2.1;
+      font-size: 0.48rem;
+      letter-spacing: 0.08em;
+      color: rgba(245,243,238,0.20);
+      line-height: 2.4;
     }
-    .trait-hint strong { color: rgba(245,243,238,0.40); font-weight: 400; }
+    .trait-hint strong { color: rgba(245,243,238,0.35); font-weight: 400; }
 
     /* ── Right panel: 3D viewer + render ─────────────────────────────────────── */
     .hero-right {
@@ -961,11 +961,9 @@
       <p class="gen-error" id="gen-error" style="display:none"></p>
 
       <div class="trait-hint">
-        <strong>Try:</strong><br>
-        anxious · serene · chaotic · nostalgic<br>
-        melancholic · playful · mysterious · ethereal<br>
-        gentle · warm · romantic · dreamy · wild<br>
-        bold · stoic · tender · frantic · whimsical
+        anxious · serene · chaotic · nostalgic · melancholic<br>
+        playful · mysterious · ethereal · gentle · warm<br>
+        romantic · dreamy · wild · bold · whimsical
       </div>
     </div>
 
@@ -1005,10 +1003,10 @@
         <img id="strip-img" src="" alt="" crossorigin="anonymous">
         <div class="render-strip-meta">
           <div class="render-strip-traits" id="strip-traits"></div>
-          <div class="render-strip-sub">Your vessel · rendered in Blender</div>
+          <div class="render-strip-sub">Your vessel</div>
         </div>
         <button class="photobooth-trigger" id="photobooth-btn">
-          📷 &nbsp;Take a photo with your pot
+          Take a photo with your vessel
         </button>
       </div>
     </div>
@@ -1030,57 +1028,18 @@
   ══════════════════════════════════════════════════════════════ -->
   <section class="light-section">
     <div class="sec-header">
-      <span class="sec-num">01</span>
-      <span class="sec-title">About the Work</span>
+      <span class="sec-num">About</span>
+      <span class="sec-title">The Work</span>
     </div>
-    <div class="about-grid">
-      <div class="about-col" style="background:#F0EEE9;">
-        <p class="about-col-label">Concept</p>
+    <div class="about-grid" style="grid-template-columns: 180px 1fr 1fr;">
+      <div class="about-col" style="background:#F0EEE9;"></div>
+      <div class="about-col">
+        <p>Can a ceramic vessel hold a personality the way it holds water? <em>VESSEL</em> translates feeling into form — each pot shaped by the traits you bring to it.</p>
+        <p>Type a word, or let the camera read you. No two vessels are the same.</p>
       </div>
       <div class="about-col">
-        <p>Can a ceramic vessel hold a personality the way it holds water? <em>VESSEL</em> asks that question through code.</p>
-        <p>Each pot begins as a set of personality traits. These words pass through a colour psychology engine and a geometry system, instructing Blender to sculpt a unique vessel.</p>
-      </div>
-      <div class="about-col">
-        <p>The scan mode extends this: a camera reads your expression and clothing colour through Claude Vision, extracts personality traits, and builds the pot from you.</p>
         <p><em>Shape, glaze, and flower species are all determined by who you are in the moment you arrive.</em></p>
-      </div>
-      <div class="about-col">
-        <p>The result sits between tool and portrait. Every pot is a translation — from feeling to form, from language to object. No two are identical.</p>
-        <p>The archive grows with each visitor who sits in front of the camera.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════════════
-       PROCESS
-  ══════════════════════════════════════════════════════════════ -->
-  <section class="light-section">
-    <div class="sec-header">
-      <span class="sec-num">02</span>
-      <span class="sec-title">How It Works</span>
-    </div>
-    <div class="process-row">
-      <div class="process-col" style="background:#F0EEE9;"></div>
-      <div class="process-col">
-        <p class="process-col-num">01 — Input</p>
-        <p class="process-col-title">Trait or scan</p>
-        <p class="process-col-body">Text traits, or a camera scan that reads your expression and clothing colour through Claude Vision.</p>
-      </div>
-      <div class="process-col">
-        <p class="process-col-num">02 — Mapping</p>
-        <p class="process-col-title">Psychology engine</p>
-        <p class="process-col-body">Traits map to colour values, pot profiles (urn, hourglass, balloon…), flower species, and surface texture.</p>
-      </div>
-      <div class="process-col">
-        <p class="process-col-num">03 — Sculpt</p>
-        <p class="process-col-title">Blender renders</p>
-        <p class="process-col-body">A Python script builds the scene — NURBS pot, bezier stems, flat oval leaves — and Cycles renders in 48 samples.</p>
-      </div>
-      <div class="process-col">
-        <p class="process-col-num">04 — Vessel</p>
-        <p class="process-col-title">Delivered in ≈ 45 s</p>
-        <p class="process-col-body">The 1024 × 1024 render appears. Take a photo with your pot — scan the QR code to keep it.</p>
+        <p>Take a photo with your vessel. The archive grows with each visitor.</p>
       </div>
     </div>
   </section>
@@ -1088,11 +1047,9 @@
   <!-- Footer -->
   <footer>
     <div class="footer-l">
-      VESSEL — Yenlik Abdissattar — 2026<br>
-      Blender · Cycles · Python · Claude Vision · Three.js · MCP
+      VESSEL — Yenlik Abdissattar — 2026
     </div>
     <div class="footer-r">
-      Exhibition piece<br>
       AI-driven generative ceramics
     </div>
   </footer>
@@ -1102,7 +1059,7 @@
   ══════════════════════════════════════════════════════════════ -->
   <div class="pb-modal" id="pb-modal">
     <div class="pb-topbar">
-      <span class="pb-title">Photobooth — Take a photo with your vessel</span>
+      <span class="pb-title">Take a photo with your vessel</span>
       <button class="pb-close" id="pb-close" aria-label="Close">×</button>
     </div>
 
