@@ -745,6 +745,15 @@
     }
     .pb-retake:hover { border-color: #fff; color: #fff; }
 
+    .pb-restart-bar {
+      font-family: 'Bodoni Moda', serif;
+      font-size: 0.48rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+      text-align: center;
+    }
+
     /* ── RESPONSIVE ─────────────────────────────────────────────────────────── */
     @media (max-width: 900px) {
       .hero {
@@ -1184,6 +1193,7 @@
         <button class="pb-download" id="pb-download">Download composite</button>
         <button class="pb-retake" id="pb-retake">Retake photo</button>
       </div>
+      <p class="pb-restart-bar" id="pb-restart-bar"></p>
     </div>
   </div>
 
@@ -2093,6 +2103,20 @@
       };
 
       showPbPhase('result');
+
+      // Auto-restart for next visitor
+      let secs = 10;
+      const bar = document.getElementById('pb-restart-bar');
+      bar.textContent = `Restarting in ${secs}…`;
+      const restartTimer = setInterval(()=>{
+        secs--;
+        if(secs > 0){ bar.textContent = `Restarting in ${secs}…`; }
+        else{ clearInterval(restartTimer); window.location.reload(); }
+      }, 1000);
+
+      // Cancel restart if user interacts
+      document.getElementById('pb-retake').addEventListener('click', ()=>{ clearInterval(restartTimer); bar.textContent=''; }, {once:true});
+      document.getElementById('pb-download').addEventListener('click', ()=>{ clearInterval(restartTimer); bar.textContent=''; }, {once:true});
     }
 
     document.getElementById('pb-retake').addEventListener('click',()=>{
