@@ -1226,12 +1226,12 @@
     }
     scene.background = bgFromPot([0.08,0.04,0.18]);
 
-    const camera = new THREE.PerspectiveCamera(64, 1, 0.1, 100);
-    camera.position.set(0, 0.05, 3.0);
-    camera.lookAt(0, 1.2, 0);
+    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
+    camera.position.set(0, 4.2, 2.8);
+    camera.lookAt(0, 1.0, 0);
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 1.2, 0);
+    controls.target.set(0, 1.0, 0);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
     controls.autoRotate = true;
@@ -1567,9 +1567,9 @@
         controls.autoRotateSpeed=1.8;
       } else {
         applyBg(_lastPotRGB);   // restore pastel background
-        camera.fov=64; camera.updateProjectionMatrix();
-        camera.position.set(0,0.05,3.0);
-        controls.target.set(0,1.2,0);
+        camera.fov=55; camera.updateProjectionMatrix();
+        camera.position.set(0,4.2,2.8);
+        controls.target.set(0,1.0,0);
         controls.minDistance=1.5;
         controls.autoRotateSpeed=0.6;
       }
@@ -1582,9 +1582,9 @@
       const savedPos=camera.position.clone();
       const savedTarget=controls.target.clone();
       const savedAspect=camera.aspect;
-      camera.position.set(0,0.05,3.0);
-      controls.target.set(0,1.2,0);
-      camera.lookAt(0,1.2,0);
+      camera.position.set(0,4.2,2.8);
+      controls.target.set(0,1.0,0);
+      camera.lookAt(0,1.0,0);
       camera.aspect=w/h; camera.updateProjectionMatrix();
       renderer.setSize(w,h,false);
       renderer.render(scene,camera);
