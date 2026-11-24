@@ -1863,6 +1863,9 @@
     window.VESSEL=window.VESSEL||{};
     window.VESSEL.updatePot=(p)=>spawnPot(p);
     window.VESSEL.renderer=renderer;
+    window.VESSEL.controls=controls;
+    window.VESSEL.camera=camera;
+    window.VESSEL.scene=scene;
     window.VESSEL.ground=ground;
     window.VESSEL.resizeToContainer=(el)=>{
       const w=el.clientWidth,h=el.clientHeight;
@@ -1978,6 +1981,192 @@
     // ── Config — change SERVER to local IP for exhibition ────────────────────
     const SERVER = '';
     const API_HEADERS = {'Content-Type':'application/json'};
+
+    // ── Local engine ─────────────────────────────────────────────────────────
+    // GitHub Pages has no server, so every fetch to /generate, /scan, /analyse
+    // and /photobooth came back as a 404 HTML page and res.json() threw
+    // "Unexpected token '<'". The rules below are the same as api.py; the app
+    // uses them whenever no server answers with JSON. With SERVER set to the
+    // exhibition machine, the server (and Claude vision) is used as before.
+    const VESSEL_LOCAL=(()=>{
+      const DB={
+    "anxious":     ["hourglass",   [0.84, 0.18, 0.12], [0.28, 0.72, 0.42], 0.80, 8],
+    "serene":      ["wide_squat",  [0.10, 0.38, 0.78], [0.92, 0.94, 0.98], 0.72, 8],
+    "chaotic":     ["irregular",   [0.96, 0.22, 0.04], [0.98, 0.94, 0.06], 0.85, 10],
+    "nostalgic":   ["urn",         [0.72, 0.30, 0.12], [0.96, 0.84, 0.52], 0.82, 7],
+    "melancholic": ["pedestal",    [0.18, 0.14, 0.48], [0.72, 0.62, 0.92], 0.75, 6],
+    "playful":     ["balloon",     [0.98, 0.68, 0.06], [0.94, 0.22, 0.58], 0.78, 10],
+    "mysterious":  ["pedestal",    [0.08, 0.04, 0.18], [0.62, 0.16, 0.94], 0.70, 6],
+    "ethereal":    ["tall_slim",   [0.78, 0.86, 0.98], [0.94, 0.96, 1.00], 0.55, 8],
+    "grumpy":      ["wide_squat",  [0.22, 0.28, 0.14], [0.58, 0.72, 0.32], 0.88, 6],
+    "jealous":     ["hourglass",   [0.06, 0.52, 0.24], [0.94, 0.92, 0.08], 0.80, 7],
+    "curious":     ["balloon",     [0.94, 0.62, 0.08], [0.18, 0.52, 0.94], 0.76, 9],
+    "confident":   ["cylindrical", [0.06, 0.08, 0.72], [0.98, 0.78, 0.06], 0.72, 8],
+    "gentle":      ["wide_squat",  [0.96, 0.72, 0.78], [0.98, 0.94, 0.84], 0.68, 8],
+    "intense":     ["hourglass",   [0.76, 0.04, 0.04], [0.98, 0.92, 0.88], 0.78, 7],
+    "warm":        ["urn",         [0.94, 0.42, 0.08], [0.98, 0.86, 0.22], 0.80, 8],
+    "cold":        ["pedestal",    [0.22, 0.48, 0.82], [0.86, 0.94, 0.98], 0.70, 6],
+    "sad":         ["narrow",      [0.38, 0.44, 0.62], [0.78, 0.82, 0.94], 0.78, 6],
+    "happy":       ["balloon",     [0.98, 0.88, 0.06], [0.96, 0.42, 0.18], 0.76, 10],
+    "angry":       ["hourglass",   [0.88, 0.04, 0.04], [0.98, 0.88, 0.06], 0.84, 8],
+    "bubbly":      ["balloon",     [0.96, 0.58, 0.82], [0.98, 0.94, 0.42], 0.78, 10],
+    "dreamy":      ["urn",         [0.72, 0.58, 0.94], [0.94, 0.88, 0.98], 0.65, 9],
+    "wild":        ["irregular",   [0.28, 0.72, 0.08], [0.96, 0.78, 0.06], 0.86, 10],
+    "elegant":     ["pedestal",    [0.08, 0.08, 0.08], [0.94, 0.90, 0.82], 0.60, 7],
+    "dark":        ["pedestal",    [0.06, 0.04, 0.10], [0.52, 0.12, 0.86], 0.65, 6],
+    "bright":      ["balloon",     [0.98, 0.96, 0.08], [0.96, 0.38, 0.06], 0.80, 10],
+    "nervous":     ["hourglass",   [0.62, 0.48, 0.36], [0.42, 0.74, 0.52], 0.82, 7],
+    "peaceful":    ["wide_squat",  [0.42, 0.74, 0.58], [0.94, 0.98, 0.92], 0.70, 8],
+    "romantic":    ["urn",         [0.92, 0.28, 0.48], [0.98, 0.88, 0.92], 0.72, 9],
+    "bold":        ["hourglass",   [0.06, 0.06, 0.62], [0.96, 0.82, 0.06], 0.78, 8],
+    "tender":      ["wide_squat",  [0.96, 0.78, 0.84], [0.98, 0.94, 0.92], 0.68, 8],
+    "frantic":     ["irregular",   [0.92, 0.26, 0.04], [0.96, 0.82, 0.06], 0.88, 10],
+    "stoic":       ["cylindrical", [0.28, 0.28, 0.30], [0.68, 0.72, 0.66], 0.82, 6],
+    "whimsical":   ["balloon",     [0.82, 0.48, 0.96], [0.98, 0.92, 0.42], 0.76, 10],
+};
+      const DEFAULT=["urn",[0.68,0.28,0.12],[0.94,0.82,0.42],0.78,8];
+      const SPECIES={
+    "anxious":     ["cosmos",    "tulip",    "lavender",      "poppy"],
+    "serene":      ["daisy",     "lotus",    "lily",          "orchid"],
+    "chaotic":     ["sunflower", "carnation","iris",          "chrysanthemum"],
+    "nostalgic":   ["daisy",     "rose",     "lavender",      "peony"],
+    "melancholic": ["cosmos",    "orchid",   "iris",          "lavender"],
+    "playful":     ["daffodil",  "peony",    "wildflower",    "cosmos"],
+    "mysterious":  ["cosmos",    "orchid",   "iris",          "lotus"],
+    "ethereal":    ["daisy",     "lily",     "lavender",      "orchid"],
+    "grumpy":      ["wildflower","carnation","iris",          "chrysanthemum"],
+    "jealous":     ["cosmos",    "tulip",    "iris",          "poppy"],
+    "curious":     ["sunflower", "peony",    "orchid",        "daffodil"],
+    "confident":   ["sunflower", "tulip",    "iris",          "lily"],
+    "gentle":      ["daisy",     "peony",    "lavender",      "rose"],
+    "intense":     ["sunflower", "rose",     "iris",          "poppy"],
+    "warm":        ["sunflower", "carnation","daffodil",      "rose"],
+    "cold":        ["cosmos",    "tulip",    "iris",          "lotus"],
+    "sad":         ["wildflower","orchid",   "lavender",      "tulip"],
+    "happy":       ["daisy",     "daffodil", "sunflower",     "peony"],
+    "angry":       ["wildflower","rose",     "iris",          "poppy"],
+    "bubbly":      ["daffodil",  "peony",    "cosmos",        "daisy"],
+    "dreamy":      ["cosmos",    "peony",    "lavender",      "lotus"],
+    "wild":        ["sunflower", "chrysanthemum","wildflower","poppy"],
+    "elegant":     ["cosmos",    "orchid",   "lily",          "carnation"],
+    "dark":        ["wildflower","orchid",   "iris",          "lotus"],
+    "bright":      ["sunflower", "daffodil", "cosmos",        "daisy"],
+    "nervous":     ["cosmos",    "tulip",    "lavender",      "wildflower"],
+    "peaceful":    ["daisy",     "lotus",    "lavender",      "lily"],
+    "romantic":    ["daisy",     "peony",    "rose",          "carnation"],
+    "bold":        ["sunflower", "iris",     "lily",          "chrysanthemum"],
+    "tender":      ["daisy",     "carnation","lavender",      "rose"],
+    "frantic":     ["sunflower", "chrysanthemum","wildflower","cosmos"],
+    "stoic":       ["cosmos",    "lotus",    "iris",          "lily"],
+    "whimsical":   ["daffodil",  "peony",    "cosmos",        "wildflower"],
+};
+      const SHAPE={
+    "cylindrical": "uniformCylinder",
+    "tall_slim":   "narrowCylinder",
+    "wide_squat":  "bulbous",
+    "tapered":     "amphora",
+    "balloon":     "bulbous",
+    "narrow":      "pinnedNeck",
+    "irregular":   "flaringRim",
+    "hourglass":   "flaringRim",
+    "pedestal":    "pinnedNeck",
+    "urn":         "amphora",
+};
+      const ALL=new Set(["sunflower","rose","daisy","wildflower","tulip","poppy","grass","orchid","peony","iris","lily","lavender","lotus","chrysanthemum","carnation","daffodil","cosmos"]);
+      function resolve(traits){
+        const n=traits.map(t=>t.toLowerCase().trim());
+        let [shape,pot,flower,rough,count]=DEFAULT;
+        for(const t of n){ if(DB[t]){[shape,pot,flower,rough,count]=DB[t];break;} }
+        for(const t of n.slice(1)){ if(DB[t]){const [,p2,f2]=DB[t];pot=pot.map((a,i)=>(a+p2[i])/2);flower=flower.map((a,i)=>(a+f2[i])/2);break;} }
+        let species=[];
+        for(const t of n){ if(SPECIES[t]){species=SPECIES[t].slice();break;} }
+        if(!species.length) species=["daisy","wildflower","tulip"];
+        for(const t of n.slice(1)){ if(SPECIES[t]){SPECIES[t].forEach(s=>{if(!species.includes(s))species.push(s);});break;} }
+        return {shape,pot,flower,rough,count,species};
+      }
+      function params(r){
+        let ft=r.species.filter(s=>ALL.has(s)); if(!ft.length) ft=["daisy"];
+        return {colorRGB:r.pot,flowerColorRGB:r.flower,silhouette:SHAPE[r.shape]||"amphora",roughness:r.rough,flowerTypes:ft.slice(0,4),flowerCount:r.count};
+      }
+      function rgb2hsv(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;
+        if(d){h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h/=6;if(h<0)h+=1;}
+        return [h,mx?d/mx:0,mx];}
+      function hsv2rgb(h,s,v){const i=Math.floor(h*6),f=h*6-i,p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
+        return [[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]][((i%6)+6)%6];}
+      function complementary(c,off=0.5){let [h,s,v]=rgb2hsv(...c);h=(h+off)%1;
+        s=Math.max(0.55,Math.min(1,s*1.15));v=Math.max(0.55,Math.min(1,v*1.10));return hsv2rgb(h,s,v);}
+      const dist=(a,b)=>a.reduce((m,x,i)=>m+Math.abs(x-b[i]),0);
+      function blend(cols,pot,flower){
+        if(!cols.length) return [pot,flower];
+        pot=cols[0];
+        flower=cols.length>=2&&dist(cols[1],pot)>=0.35?cols[1]:complementary(pot);
+        if(dist(flower,pot)<0.35) flower=complementary(pot,0.33);
+        return [pot,flower];
+      }
+      // Without Claude vision: read the frame's own colours. Top = hair,
+      // centre-low = clothing; the clothing colour and the frame's light
+      // choose the two traits, from the same vocabulary the server uses.
+      function avg(px,W,x0,y0,x1,y1){let r=0,g=0,b=0,n=0;
+        for(let y=Math.floor(y0*W);y<Math.floor(y1*W);y++)for(let x=Math.floor(x0*W);x<Math.floor(x1*W);x++){const o=(y*W+x)*4;r+=px[o];g+=px[o+1];b+=px[o+2];n++;}
+        return [r/n/255,g/n/255,b/n/255];}
+      function read(dataURL){
+        return new Promise((ok,fail)=>{
+          const img=new Image();
+          img.onload=()=>{
+            const W=48,c=document.createElement('canvas');c.width=c.height=W;
+            const x=c.getContext('2d');x.drawImage(img,0,0,W,W);
+            const px=x.getImageData(0,0,W,W).data;
+            const top=avg(px,W,.35,.04,.65,.22), cloth=avg(px,W,.30,.62,.70,.95),
+                  side=avg(px,W,.08,.60,.28,.95), all=avg(px,W,0,0,1,1);
+            const [h,s,v]=rgb2hsv(...cloth);
+            let lum=0,lum2=0;for(let i=0;i<px.length;i+=4){const l=(px[i]+px[i+1]+px[i+2])/765;lum+=l;lum2+=l*l;}
+            const N=px.length/4,mean=lum/N,contrast=Math.sqrt(Math.max(0,lum2/N-mean*mean));
+            const seed=Math.round((cloth[0]*7+cloth[1]*13+cloth[2]*17+top[0]*5)*1000);
+            const pick=a=>a[seed%a.length];
+            let t1;
+            if(v<0.22) t1=pick(["elegant","mysterious","dark"]);
+            else if(s<0.16) t1=v>0.7?pick(["serene","ethereal"]):pick(["stoic","cold"]);
+            else if(h<0.05||h>0.94) t1=pick(["intense","bold","romantic"]);
+            else if(h<0.17) t1=pick(["warm","happy","playful"]);
+            else if(h<0.45) t1=pick(["peaceful","curious","wild"]);
+            else if(h<0.70) t1=pick(["cold","serene","confident"]);
+            else t1=pick(["dreamy","mysterious","whimsical"]);
+            let t2=contrast>0.24?pick(["bold","chaotic","intense"]):mean>0.6?pick(["bubbly","gentle","tender"]):mean<0.35?pick(["melancholic","nostalgic","stoic"]):pick(["gentle","curious","nostalgic"]);
+            if(t2===t1) t2="nostalgic";
+            const hex=c=>'#'+c.map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('');
+            ok({traits:[t1,t2],colors:[cloth,top,side,all].map(hex),rgb:[cloth,top]});
+          };
+          img.onerror=()=>fail(new Error('Could not read the photo'));
+          img.src=dataURL;
+        });
+      }
+      async function handle(path,body){
+        if(path==='/generate'){
+          const traits=String(body.traits||'').split(/[,\s]+/).filter(Boolean);
+          if(!traits.length) return {ok:false,error:'No traits provided'};
+          return {ok:true,traits,pot_params:params(resolve(traits))};
+        }
+        if(path==='/scan'||path==='/analyse'){
+          const r=await read(body.image), res=resolve(r.traits);
+          [res.pot,res.flower]=blend(r.rgb,res.pot,res.flower);
+          return {ok:true,traits:r.traits,colors:r.colors,pot_params:params(res)};
+        }
+        return {ok:false,local:true};
+      }
+      return {handle};
+    })();
+
+    // Ask the server; if there is none (or it answers with a page, not JSON), work locally.
+    async function vesselApi(path,body){
+      try{
+        const res=await fetch(`${SERVER}${path}`,{method:'POST',headers:API_HEADERS,body:JSON.stringify(body)});
+        if((res.headers.get('content-type')||'').includes('application/json')){
+          const d=await res.json();
+          if(d.ok||res.status<500) return d;
+        }
+      }catch(_){}
+      return VESSEL_LOCAL.handle(path,body);
+    }
 
     // ── State ────────────────────────────────────────────────────────────────
     let lastRenderFilename = null;
@@ -2097,11 +2286,7 @@
       document.getElementById('render-strip').classList.remove('visible');
       startLoading();
       try{
-        const res=await fetch(`${SERVER}/generate`,{
-          method:'POST',headers:API_HEADERS,
-          body:JSON.stringify({traits:raw,label}),
-        });
-        const data=await res.json();
+        const data=await vesselApi('/generate',{traits:raw,label});
         if(!data.ok) throw new Error(data.error||'Generation failed');
         showResult(data);
       }catch(e){showError(e.message);}
@@ -2161,11 +2346,7 @@
       startLoading();
       const label=document.getElementById('scan-label').value.trim();
       try{
-        const res=await fetch(`${SERVER}/scan`,{
-          method:'POST',headers:API_HEADERS,
-          body:JSON.stringify({image:capturedDataURL,label}),
-        });
-        const data=await res.json();
+        const data=await vesselApi('/scan',{image:capturedDataURL,label});
         if(!data.ok)throw new Error(data.error||'Scan failed');
         stopLoading();
         if(window.VESSEL&&data.pot_params) window.VESSEL.updatePot(data.pot_params);
@@ -2200,11 +2381,7 @@
       cx.drawImage(vid,0,0,c.width,c.height);
       const imgData=c.toDataURL('image/jpeg',0.72);
       try{
-        const res=await fetch(`${SERVER}/analyse`,{
-          method:'POST',headers:API_HEADERS,
-          body:JSON.stringify({image:imgData}),
-        });
-        const d=await res.json();
+        const d=await vesselApi('/analyse',{image:imgData});
         if(d.ok&&d.pot_params&&window.VESSEL) window.VESSEL.updatePot(d.pot_params);
       }catch(_){}
     }
@@ -2399,23 +2576,21 @@
       document.getElementById('pb-composite-img').src=compositeDataURL;
 
       // Save to API for QR
-      let qrUrl=lastRenderUrl;
-      try{
-        const res=await fetch(`${SERVER}/photobooth`,{
-          method:'POST',headers:API_HEADERS,
-          body:JSON.stringify({composite:compositeDataURL}),
-        });
-        const data=await res.json();
-        if(data.ok) qrUrl=data.render_url||`${SERVER}/renders/${data.filename}`;
-      }catch(e){}
+      let qrUrl=null;
+      const pbData=await vesselApi('/photobooth',{composite:compositeDataURL});
+      if(pbData&&pbData.ok) qrUrl=pbData.render_url||`${SERVER}/renders/${pbData.filename}`;
 
       const qrEl=document.getElementById('pb-qr');
+      const qrBlock=qrEl.closest('.pb-qr-block');
       qrEl.innerHTML='';
-      new QRCode(qrEl,{
-        text:qrUrl, width:160, height:160,
-        colorDark:'#000000', colorLight:'#ffffff',
-        correctLevel:QRCode.CorrectLevel.M,
-      });
+      if(qrUrl){
+        if(qrBlock) qrBlock.style.display='';
+        new QRCode(qrEl,{
+          text:qrUrl, width:160, height:160,
+          colorDark:'#000000', colorLight:'#ffffff',
+          correctLevel:QRCode.CorrectLevel.M,
+        });
+      }else if(qrBlock){ qrBlock.style.display='none'; }  // no server: download only
 
       document.getElementById('pb-download').onclick=()=>{
         const a=document.createElement('a');
