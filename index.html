@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VESSEL — Exhibition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>VESSEL · a ceramic flower pot for who you are today</title>
+  <meta name="description" content="An interactive installation by Yenlik Abdissattar. Describe yourself in a few words, or let the camera read the colours you wear, and receive a ceramic flower pot of your own.">
+  <meta name="theme-color" content="#0E0D0C">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;1,400&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
   <script type="importmap">
   {
     "imports": {
@@ -17,1059 +18,197 @@
     }
   }
   </script>
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── Tokens ───────────────────────────────────────────────────────────
+       Night for the arrival, bone and paper for the gallery. The bone ground
+       is a warm neutral on purpose: a glaze is judged against grey, so the
+       colour you are given reads true. */
     :root {
-      --ink:   #0D0D0D;
+      --night: #0E0D0C;
       --cream: #F5F3EE;
-      --mid:   #888;
-      --rule:  rgba(255,255,255,0.10);
-      --gold:  #C8A96E;
+      --bone:  #E9E4DB;
+      --paper: #F7F4EF;
+      --ink:   #1B1815;
+      --muted: #6A6158;            /* 5.2:1 on paper */
+      --hair:  rgba(27,24,21,.14);
+      --glaze: #8FA89A;            /* set from each result */
+      --bloom: #E8B4C0;
+      --serif: 'Bodoni Moda', 'Didot', 'Bodoni 72', serif;
+      --text:  'EB Garamond', 'Garamond', Georgia, serif;
+      --ease:  cubic-bezier(.22,1,.36,1);
+      --s1: 8px; --s2: 16px; --s3: 24px; --s4: 32px; --s6: 48px; --s8: 64px;
     }
+    html { -webkit-text-size-adjust: 100%; }
+    body { background: var(--paper); color: var(--ink); font: 400 18px/1.55 var(--text); overflow-x: hidden; }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; background: none; border: 0; }
+    :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+    .landing :focus-visible { outline-color: var(--cream); }
+    [hidden] { display: none !important; }
+    .caps { font-variant: all-small-caps; letter-spacing: .08em; font-size: 17px; }
+    .num  { font-variant-numeric: lining-nums tabular-nums; }
 
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--ink);
-      color: var(--cream);
-      font-family: 'EB Garamond', serif;
-      font-size: 16px;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    /* ── HERO (100vh) ────────────────────────────────────────────────────────── */
-    .hero {
-      height: 100vh;
-      display: grid;
-      grid-template-columns: 420px 1fr;
-      position: relative;
-    }
-
-    /* Left panel */
-    .hero-left {
-      display: flex;
-      flex-direction: column;
-      padding: 3rem 3rem 2.4rem;
-      border-right: 1px solid var(--rule);
-      overflow: hidden;
-    }
-
-    .wordmark {
-      font-family: 'Bodoni Moda', serif;
-      font-size: clamp(3.8rem, 6vw, 6rem);
-      font-weight: 400;
-      line-height: 0.90;
-      letter-spacing: -0.01em;
-      margin-bottom: 0.6rem;
-    }
-    .tagline {
-      font-size: 0.56rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(245,243,238,0.32);
-      margin-bottom: 2.6rem;
-    }
-
-    /* Mode tabs */
-    .mode-tabs {
-      display: flex;
-      gap: 0;
-      border-bottom: 1px solid var(--rule);
-      margin-bottom: 1.6rem;
-    }
-    .mode-tab {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.53rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      background: none;
-      border: none;
-      color: rgba(245,243,238,0.35);
-      padding: 0 0 0.65rem;
-      margin-right: 1.4rem;
-      cursor: pointer;
-      border-bottom: 1px solid transparent;
-      margin-bottom: -1px;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .mode-tab.active { color: var(--cream); border-bottom-color: var(--cream); }
-    .mode-panel { display: none; }
-    .mode-panel.active { display: flex; flex-direction: column; gap: 1.4rem; }
-
-    /* Fields */
-    .field-label {
-      font-size: 0.50rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: rgba(245,243,238,0.38);
-      display: block;
-      margin-bottom: 0.4rem;
-    }
-    .field-input {
-      font-family: 'EB Garamond', serif;
-      font-size: 1.10rem;
-      width: 100%;
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid var(--rule);
-      color: var(--cream);
-      padding: 0.3rem 0 0.5rem;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    .field-input::placeholder { color: rgba(245,243,238,0.22); }
-    .field-input:focus { border-bottom-color: rgba(245,243,238,0.55); }
-
-    /* Buttons */
-    .btn-primary {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.53rem;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      background: var(--cream);
-      color: var(--ink);
-      border: none;
-      padding: 0.78rem 1.8rem;
-      cursor: pointer;
-      transition: opacity 0.18s;
-      align-self: flex-start;
-    }
-    .btn-primary:hover:not(:disabled) { opacity: 0.78; }
-    .btn-primary:disabled { opacity: 0.28; cursor: not-allowed; }
-
-    .btn-outline {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.53rem;
-      letter-spacing: 0.20em;
-      text-transform: uppercase;
-      background: transparent;
-      color: var(--cream);
-      border: 1px solid rgba(245,243,238,0.35);
-      padding: 0.68rem 1.4rem;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
-      align-self: flex-start;
-    }
-    .btn-outline:hover { border-color: var(--cream); }
-
-    /* Camera in left panel */
-    .cam-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 4/3;
-      background: #111;
-      overflow: hidden;
-    }
-    #left-video {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1);
-      display: block;
-    }
-    #left-canvas { display: none; }
-    .cam-overlay {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
-    }
-    .cam-reticle {
-      width: 44%; aspect-ratio: 1;
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 50%;
-    }
-    .cam-freeze {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,0.62);
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: opacity 0.22s; pointer-events: none;
-    }
-    .cam-freeze.active { opacity: 1; }
-    .cam-freeze-label {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.50rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.65);
-    }
-
-    /* Swatches */
-    .swatches { display: none; flex-direction: column; gap: 0.35rem; }
-    .swatch-row { display: flex; gap: 0.3rem; }
-    .swatch-dot {
-      width: 1.1rem; height: 1.1rem;
-      border-radius: 50%;
-      background: #333;
-      border: 1px solid rgba(255,255,255,0.12);
-      transition: background 0.3s;
-    }
-    .swatch-cap {
-      font-size: 0.44rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(245,243,238,0.30);
-    }
-
-    /* Status */
-    .gen-status {
-      font-size: 0.55rem;
-      letter-spacing: 0.10em;
-      color: rgba(245,243,238,0.40);
-      min-height: 1em;
-    }
-    .gen-error {
-      font-size: 0.55rem;
-      color: #D05050;
-      letter-spacing: 0.04em;
-    }
-
-    /* Traits hint */
-    .trait-hint {
-      margin-top: auto;
-      padding-top: 1.8rem;
-      border-top: 1px solid var(--rule);
-      font-size: 0.48rem;
-      letter-spacing: 0.08em;
-      color: rgba(245,243,238,0.20);
-      line-height: 2.4;
-    }
-    .trait-hint strong { color: rgba(245,243,238,0.35); font-weight: 400; }
-
-    /* ── Right panel: 3D viewer + render ─────────────────────────────────────── */
-    .hero-right {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #main-3d {
-      flex: 1;
-      min-height: 0;
-    }
-    #main-3d canvas { display: block; width: 100% !important; height: 100% !important; }
-
-    .viewer-hint {
-      position: absolute;
-      bottom: 1.2rem;
-      right: 1.4rem;
-      font-size: 0.44rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(245,243,238,0.22);
-      pointer-events: none;
-    }
-
-    /* Render strip — appears at bottom of right panel after generation */
-    .render-strip {
-      display: none;
-      flex-direction: row;
-      align-items: center;
-      gap: 1.2rem;
-      padding: 1rem 1.6rem;
-      border-top: 1px solid var(--rule);
-      background: rgba(0,0,0,0.55);
-    }
-    .render-strip.visible { display: flex; }
-    .render-strip img {
-      height: 80px;
-      width: auto;
-      display: block;
-    }
-    .render-strip-meta {
-      flex: 1;
-    }
-    .render-strip-traits {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.85rem;
-      letter-spacing: 0.04em;
-    }
-    .render-strip-sub {
-      font-size: 0.48rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(245,243,238,0.38);
-      margin-top: 0.25rem;
-    }
-
-    .photobooth-trigger {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.50rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      background: none;
-      border: 1px solid rgba(245,243,238,0.30);
-      color: var(--cream);
-      padding: 0.55rem 1.1rem;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: border-color 0.15s;
-      flex-shrink: 0;
-    }
-    .photobooth-trigger:hover { border-color: var(--cream); }
-
-    /* Loading overlay inside hero-right */
-    .gen-loading {
-      position: absolute;
-      inset: 0;
-      background: rgba(13,13,13,0.85);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1.8rem;
-      z-index: 5;
-    }
-    .gen-loading.active { display: flex; }
-
-    .vl-draw {
-      fill: none; stroke: var(--cream); stroke-width: 0.9;
-      stroke-linecap: round; stroke-linejoin: round;
-      stroke-dasharray: 1; stroke-dashoffset: 1;
-    }
-    .vl-pot   { animation: vlDraw 1.4s ease-out 0.30s forwards; }
-    .vl-rim   { animation: vlDraw 0.5s ease-out 1.00s forwards; }
-    .vl-stem  { animation: vlDraw 0.7s ease-out 1.55s forwards; }
-    .vl-leaf1 { animation: vlDraw 0.4s ease-out 1.90s forwards; }
-    .vl-leaf2 { animation: vlDraw 0.4s ease-out 2.10s forwards; }
-    .vl-ctr   { animation: vlDraw 0.6s ease-out 2.30s forwards; }
-    .vl-pet   { animation: vlDraw 0.18s ease-out 2.50s forwards; }
-    @keyframes vlDraw { from{stroke-dashoffset:1;} to{stroke-dashoffset:0;} }
-    .gen-loading.active .vl-plant svg {
-      animation: vlFloat 3.2s ease-in-out 3.4s infinite;
-    }
-    @keyframes vlFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
-
-    .loading-phase {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.52rem;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      color: rgba(245,243,238,0.50);
-      text-align: center;
-      transition: opacity 0.4s;
-    }
-    .loading-bar {
-      width: 60px; height: 1px;
-      background: rgba(245,243,238,0.10);
-      position: relative; overflow: hidden;
-    }
-    .loading-bar::after {
-      content:''; position:absolute; top:0; left:-50%;
-      width:50%; height:100%; background: rgba(245,243,238,0.60);
-      animation: lbSweep 2.2s cubic-bezier(0.4,0,0.6,1) infinite;
-    }
-    @keyframes lbSweep { 0%{left:-50%;} 100%{left:110%;} }
-
-    /* ── SCROLL SECTIONS (light) ─────────────────────────────────────────────── */
-    .light-section {
-      background: var(--cream);
-      color: var(--ink);
-      border-top: 1px solid #D8D5CE;
-    }
-
-    .sec-header {
-      display: grid;
-      grid-template-columns: 180px 1fr;
-      padding: 1.8rem 2.6rem;
-      border-bottom: 1px solid #D8D5CE;
-      align-items: baseline;
-      gap: 2rem;
-    }
-    .sec-num {
-      font-size: 0.50rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #999;
-    }
-    .sec-title {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.68rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-    }
-
-    /* ── RECENTS ─────────────────────────────────────────────────────────────── */
-    .recents-scroll {
-      display: flex;
-      flex-direction: row;
-      gap: 0;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .recents-scroll::-webkit-scrollbar { display: none; }
-
-    .recent-cell {
-      flex-shrink: 0;
-      width: 220px;
-      border-right: 1px solid #D8D5CE;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .recent-cell img {
-      width: 100%;
-      aspect-ratio: 1;
-      object-fit: cover;
-      display: block;
-      background: #EEE;
-      transition: transform 0.4s ease;
-    }
-    .recent-cell:hover img { transform: scale(1.04); }
-    .recent-cell-label {
-      padding: 0.55rem 0.8rem 0.7rem;
-      font-size: 0.46rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #999;
-      border-top: 1px solid #D8D5CE;
-    }
-
-    /* ── ABOUT ───────────────────────────────────────────────────────────────── */
-    .about-grid {
-      display: grid;
-      grid-template-columns: 180px 1fr 1fr 1fr;
-      gap: 0;
-    }
-    .about-col {
-      padding: 2.6rem;
-      border-right: 1px solid #D8D5CE;
-      font-size: 0.92rem;
-      line-height: 1.82;
-      color: #333;
-    }
-    .about-col:last-child { border-right: none; }
-    .about-col em { font-style: italic; }
-    .about-col-label {
-      font-size: 0.48rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #999;
-      margin-bottom: 1rem;
-    }
-
-    /* ── PROCESS ─────────────────────────────────────────────────────────────── */
-    .process-row {
-      display: grid;
-      grid-template-columns: 180px repeat(4, 1fr);
-      gap: 0;
-    }
-    .process-col {
-      padding: 2.4rem 2.2rem;
-      border-right: 1px solid #D8D5CE;
-    }
-    .process-col:last-child { border-right: none; }
-    .process-col-num {
-      font-size: 0.46rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #AAA;
-      margin-bottom: 0.8rem;
-    }
-    .process-col-title {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 1.05rem;
-      line-height: 1.2;
-      margin-bottom: 0.7rem;
-    }
-    .process-col-body {
-      font-size: 0.82rem;
-      line-height: 1.78;
-      color: #555;
-    }
-
-    /* ── FOOTER ──────────────────────────────────────────────────────────────── */
-    footer {
-      background: var(--cream);
-      border-top: 1px solid #D8D5CE;
-      padding: 2rem 2.6rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-    }
-    .footer-l {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.58rem;
-      letter-spacing: 0.10em;
-      color: #999;
-    }
-    .footer-r {
-      font-size: 0.50rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #CCC;
-      text-align: right;
-    }
-
-    /* ── PHOTOBOOTH MODAL ────────────────────────────────────────────────────── */
-    .pb-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      background: #000;
-      display: none;
-      flex-direction: column;
-    }
-    .pb-modal.open { display: flex; }
-
-    .pb-topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.2rem 2rem;
-      border-bottom: 1px solid rgba(255,255,255,0.10);
-      flex-shrink: 0;
-      background: rgba(0,0,0,0.92);
-      backdrop-filter: blur(6px);
-      position: relative;
-      z-index: 10;
-    }
-    .pb-title {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.58rem;
-      letter-spacing: 0.26em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.55);
-    }
-    .pb-close {
-      background: none;
-      border: none;
-      color: rgba(255,255,255,0.40);
-      font-size: 1.4rem;
-      cursor: pointer;
-      line-height: 1;
-      padding: 0;
-      transition: color 0.15s;
-    }
-    .pb-close:hover { color: #fff; }
-
-    /* Phases */
-    .pb-phase { display: none; flex: 1; flex-direction: column; }
-    .pb-phase.active { display: flex; }
-
-    /* Phases need min-height: 0 to not overflow flex parent */
-    .pb-phase { min-height: 0; }
-
-    /* Phase 1 — aim camera */
-    .pb-aim {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0a0a0a;
-    }
-    /* 16:9 box that holds the camera feed + vessel overlay */
-    .pb-aim-inner {
-      position: relative;
-      aspect-ratio: 16/9;
-      height: 100%;
-      max-width: 100%;
-      overflow: hidden;
-    }
-    #pb-video {
-      position: absolute;
-      inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1);
-      display: block;
-    }
-    #pb-canvas { display: none; }
-    .pb-aim-overlay {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
-      z-index: 1;
-    }
-    .pb-aim-reticle {
-      width: 38%; aspect-ratio: 3/4;
-      border: 1px solid rgba(255,255,255,0.22);
-      border-radius: 4px;
-    }
-
-    .pb-countdown-display {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-family: 'Bodoni Moda', serif;
-      font-size: 8rem;
-      color: rgba(255,255,255,0.85);
-      line-height: 1;
-      display: none;
-      z-index: 2;
-    }
-
-    .pb-aim-bottom {
-      flex-shrink: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 1.4rem;
-      padding: 1.4rem 2rem;
-      background: rgba(0,0,0,0.82);
-      backdrop-filter: blur(6px);
-      position: relative;
-      z-index: 10;
-    }
-    .pb-capture-btn {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.58rem;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      background: #fff;
-      color: #000;
-      border: none;
-      padding: 0.85rem 2.4rem;
-      cursor: pointer;
-      transition: opacity 0.18s;
-    }
-    .pb-capture-btn:hover { opacity: 0.82; }
-
-    /* Size adjust buttons */
-    .pb-size-btns {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-    .pb-size-btn {
-      font-size: 1.1rem;
-      line-height: 1;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.18);
-      color: rgba(255,255,255,0.70);
-      width: 2.2rem;
-      height: 2.2rem;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.15s;
-      user-select: none;
-    }
-    .pb-size-btn:hover { background: rgba(255,255,255,0.20); }
-
-    /* Drag handle overlay inside vessel overlay */
-    .pb-vessel-handle {
-      position: absolute;
-      inset: 0;
-      z-index: 10;
-      cursor: grab;
-      touch-action: none;
-      user-select: none;
-    }
-    .pb-vessel-handle.dragging { cursor: grabbing; }
-    .pb-vessel-hint {
-      position: absolute;
-      bottom: 6px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.40rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
-      pointer-events: none;
-      white-space: nowrap;
-    }
-
-    /* Phase 2 — result */
-    #pb-result-phase {
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2.4rem;
-      padding: 2rem;
-      overflow-y: auto;
-    }
-
-    .pb-composite {
-      display: flex;
-      gap: 2px;
-      width: 100%;
-      max-width: 760px;
-    }
-    .pb-composite img {
-      flex: 1;
-      width: 0;
-      display: block;
-      object-fit: cover;
-      max-height: 50vh;
-    }
-
-    .pb-qr-block {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.9rem;
-    }
-    #pb-qr { background: #fff; padding: 10px; }
-    .pb-qr-label {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.52rem;
-      letter-spacing: 0.20em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.45);
-      text-align: center;
-    }
-    .pb-qr-timer {
-      position: relative;
-      width: 54px;
-      height: 54px;
-    }
-    .pb-qr-timer svg { transform: rotate(-90deg); display: block; }
-    .pb-qr-timer-track { fill: none; stroke: rgba(255,255,255,0.10); stroke-width: 3; }
-    .pb-qr-timer-ring {
-      fill: none;
-      stroke: rgba(255,255,255,0.50);
-      stroke-width: 3;
-      stroke-linecap: round;
-      stroke-dasharray: 144.51;
-      stroke-dashoffset: 0;
-      transition: stroke-dashoffset 1s linear;
-    }
-    .pb-qr-timer-num {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.88rem;
-      color: rgba(255,255,255,0.60);
-    }
-    .pb-qr-expire {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.44rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.30);
-      text-align: center;
-    }
-
-    .pb-actions {
-      display: flex;
-      gap: 1rem;
-    }
-    .pb-download {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.50rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      background: none;
-      border: 1px solid rgba(255,255,255,0.25);
-      color: rgba(255,255,255,0.55);
-      padding: 0.55rem 1.2rem;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
-    }
-    .pb-download:hover { border-color: #fff; color: #fff; }
-    .pb-retake {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.50rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      background: none;
-      border: 1px solid rgba(255,255,255,0.25);
-      color: rgba(255,255,255,0.55);
-      padding: 0.55rem 1.2rem;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
-    }
-    .pb-retake:hover { border-color: #fff; color: #fff; }
-
-    .pb-restart-bar {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.48rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.28);
-      text-align: center;
-    }
-
-    /* ── RESPONSIVE ─────────────────────────────────────────────────────────── */
-    @media (max-width: 900px) {
-      .hero {
-        grid-template-columns: 1fr !important;
-        grid-template-rows: auto 1fr;
-        height: auto;
-        min-height: 100svh;
-      }
-      .hero-left {
-        border-right: none;
-        border-bottom: 1px solid var(--rule);
-        padding: 1.6rem 1.4rem 1.4rem;
-      }
-      .hero-right {
-        height: 60vw;
-        min-height: 320px;
-        max-height: 520px;
-      }
-      #main-3d { flex: unset; height: 100%; }
-      .wordmark { font-size: clamp(2.6rem, 10vw, 4rem); }
-      .about-grid {
-        grid-template-columns: 1fr !important;
-      }
-      .about-col { border-right: none; border-bottom: 1px solid #D8D5CE; }
-      .about-col:last-child { border-bottom: none; }
-      .process-row {
-        grid-template-columns: 1fr 1fr !important;
-      }
-      .process-col:first-child { display: none; }
-      .process-col { border-bottom: 1px solid #D8D5CE; }
-      .sec-header { grid-template-columns: 1fr; gap: 0.4rem; }
-    }
-    @media (max-width: 600px) {
-      .process-row { grid-template-columns: 1fr !important; }
-      .hero-right { height: 70vw; max-height: 380px; }
-    }
-
-    /* ── SCAN MODE: full-panel camera ───────────────────────────────────────── */
-    .hero.scan-mode {
-      grid-template-columns: 1fr 1fr;
-    }
-    .hero.scan-mode .wordmark,
-    .hero.scan-mode .tagline,
-    .hero.scan-mode .mode-tabs,
-    .hero.scan-mode #panel-type,
-    .hero.scan-mode .trait-hint,
-    .hero.scan-mode .gen-status,
-    .hero.scan-mode .gen-error { display: none !important; }
-    .hero.scan-mode .hero-left {
-      padding: 0;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero.scan-mode #panel-scan {
-      position: absolute;
-      inset: 0;
-      gap: 0;
-    }
-    .hero.scan-mode .cam-wrap {
-      flex: 1;
-      aspect-ratio: unset;
-      min-height: 0;
-      border-radius: 0;
-    }
-    .scan-bottom-bar {
-      flex-shrink: 0;
-      padding: 0.9rem 1.4rem;
-      background: rgba(13,13,13,0.84);
-      backdrop-filter: blur(6px);
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      border-top: 1px solid var(--rule);
-    }
-    .scan-back-btn {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      z-index: 10;
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.46rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      background: rgba(0,0,0,0.55);
-      color: rgba(245,243,238,0.70);
-      border: 1px solid rgba(255,255,255,0.18);
-      padding: 0.36rem 0.75rem;
-      cursor: pointer;
-      backdrop-filter: blur(4px);
-      transition: border-color 0.15s, color 0.15s;
-      display: none;
-    }
-    .hero.scan-mode .scan-back-btn { display: block; }
-    .result-reveal-btn {
-      display: none;
-      position: absolute;
-      bottom: 1.4rem;
-      right: 1.6rem;
-      z-index: 8;
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.53rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      background: var(--cream);
-      color: var(--ink);
-      border: none;
-      padding: 0.78rem 1.8rem;
-      cursor: pointer;
-      transition: opacity 0.18s;
-      animation: revealPulse 1.6s ease-in-out infinite;
-    }
-    .result-reveal-btn.visible { display: block; }
-    .result-reveal-btn:hover { opacity: 0.80; }
-    @keyframes revealPulse {
-      0%,100%{box-shadow:0 0 0 0 rgba(245,243,238,0.35);}
-      50%{box-shadow:0 0 0 8px rgba(245,243,238,0);}
-    }
-
-    /* #main-3d background is driven by scene.background (pastel matched to pot) */
-    #main-3d { background: transparent; }
-
-    /* Vessel overlay — bottom-right of the 16:9 camera frame */
-    .pb-vessel-overlay {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      width: 36%;
-      height: 90%;
-      pointer-events: auto;
-      z-index: 3;
-    }
-    .pb-vessel-overlay canvas {
-      width: 100% !important;
-      height: 100% !important;
-      display: block;
-    }
-
-    /* Result phase: single full composite */
-    .pb-composite.single { display: block; }
-    .pb-composite.single img {
-      width: 100%; height: auto;
-      max-height: 52vh;
-      object-fit: contain;
-      display: block;
-      margin: 0 auto;
-    }
-    /* ── LANDING OVERLAY ────────────────────────────────────────────────────── */
-    .landing {
-      position: fixed;
-      inset: 0;
-      z-index: 500;
-      background: var(--ink);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.8s ease;
-      overflow: hidden;
-    }
+    /* ── Landing ─────────────────────────────────────────────────────── */
+    .landing { position: fixed; inset: 0; z-index: 50; background: var(--night); color: var(--cream);
+      display: flex; align-items: center; transition: opacity .8s ease; overflow: hidden; }
     .landing.hide { opacity: 0; pointer-events: none; }
-
-    /* Botanical layer */
     .lf-bg { position: absolute; inset: 0; pointer-events: none; }
+    @keyframes bloomFloat { 0%,100% { transform: translateY(0) rotate(0); } 40% { transform: translateY(-18px) rotate(5deg); } 70% { transform: translateY(-8px) rotate(-3deg); } }
+    @keyframes leafSway { 0%,100% { transform: rotate(-12deg); } 50% { transform: rotate(10deg) translateY(-8px); } }
+    @keyframes petalDrift { 0% { transform: translateY(105vh) rotate(0); opacity: 0; } 8% { opacity: .55; } 92% { opacity: .3; } 100% { transform: translateY(-10vh) rotate(540deg); opacity: 0; } }
+    .lf-cluster-tr { position: absolute; top: -60px; right: -70px; width: clamp(280px,42vw,520px); opacity: .38; animation: bloomFloat 9s ease-in-out infinite; transform-origin: 60% 30%; }
+    .lf-cluster-bl { position: absolute; bottom: -50px; left: -60px; width: clamp(220px,34vw,400px); opacity: .28; animation: bloomFloat 11s ease-in-out 1.8s infinite reverse; transform-origin: 30% 70%; }
+    .lf-mid-flower { position: absolute; top: 50%; right: 18%; transform: translateY(-50%); width: clamp(80px,12vw,140px); opacity: .14; animation: bloomFloat 7s ease-in-out .6s infinite; }
+    .lf-petal { position: absolute; bottom: -40px; animation: petalDrift linear infinite; }
+    .landing-inner { position: relative; z-index: 2; width: min(100%, 1180px); margin: 0 auto; padding: var(--s6) clamp(24px, 6vw, 96px); }
+    .landing-word { font: 400 clamp(84px, 16vw, 200px)/.84 var(--serif); letter-spacing: -.02em; }
+    .landing-line { margin-top: var(--s4); max-width: 30ch; font-size: clamp(22px, 2.6vw, 30px); line-height: 1.3; }
+    .landing-sub { margin-top: var(--s2); max-width: 44ch; color: rgba(245,243,238,.66); }
+    .landing-options { margin-top: var(--s6); display: flex; flex-wrap: wrap; gap: var(--s2); }
+    .landing-btn { min-height: 56px; padding: 0 var(--s4); border: 1px solid rgba(245,243,238,.32); display: inline-flex; align-items: center; gap: 14px;
+      font-size: 19px; transition: background .25s, color .25s, border-color .25s; }
+    .landing-btn:hover { background: var(--cream); color: var(--night); border-color: var(--cream); }
+    .landing-btn .arrow { transition: transform .3s var(--ease); }
+    .landing-btn:hover .arrow { transform: translateX(5px); }
+    .landing-credit { position: absolute; left: clamp(24px, 6vw, 96px); bottom: var(--s4); z-index: 2; font-size: 15px; color: rgba(245,243,238,.5); }
 
-    @keyframes bloomFloat {
-      0%,100% { transform: translateY(0) rotate(0deg); }
-      40%     { transform: translateY(-18px) rotate(5deg); }
-      70%     { transform: translateY(-8px) rotate(-3deg); }
-    }
-    @keyframes leafSway {
-      0%,100% { transform: rotate(-12deg) translateY(0); }
-      50%     { transform: rotate(10deg) translateY(-8px); }
-    }
-    @keyframes petalDrift {
-      0%   { transform: translateY(105vh) rotate(0deg);   opacity: 0; }
-      8%   { opacity: 0.55; }
-      92%  { opacity: 0.30; }
-      100% { transform: translateY(-10vh)  rotate(540deg); opacity: 0; }
-    }
-    @keyframes fadeInScale {
-      from { opacity:0; transform: scale(0.82); }
-      to   { opacity:1; transform: scale(1); }
-    }
+    /* ── App: the stage (3D or camera) and the label panel ───────────── */
+    .app { display: grid; grid-template-columns: minmax(0,1fr) 440px; height: 100svh; min-height: 600px; }
+    .stage { position: relative; background: var(--bone); overflow: hidden; touch-action: none; }
+    #main-3d, #main-3d canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .stage-hint { position: absolute; left: var(--s4); bottom: var(--s3); font-size: 15px; color: var(--muted); pointer-events: none; transition: opacity .4s; }
+    .stage-title { position: absolute; left: var(--s4); top: var(--s3); font: 400 15px/1 var(--text); color: var(--muted); pointer-events: none; }
 
-    .lf-cluster-tr {
-      position: absolute; top: -60px; right: -70px;
-      width: clamp(280px,42vw,520px);
-      opacity: 0.38;
-      animation: bloomFloat 9s ease-in-out infinite;
-      transform-origin: 60% 30%;
-    }
-    .lf-cluster-bl {
-      position: absolute; bottom: -50px; left: -60px;
-      width: clamp(220px,34vw,400px);
-      opacity: 0.28;
-      animation: bloomFloat 11s ease-in-out 1.8s infinite reverse;
-      transform-origin: 30% 70%;
-    }
-    .lf-mid-flower {
-      position: absolute; top: 50%; right: 18%;
-      transform: translateY(-50%);
-      width: clamp(80px,12vw,140px);
-      opacity: 0.14;
-      animation: bloomFloat 7s ease-in-out 0.6s infinite;
-    }
-    .lf-petal {
-      position: absolute;
-      bottom: -40px;
-      animation: petalDrift linear infinite;
-    }
+    /* camera layer */
+    .cam { position: absolute; inset: 0; background: #151311; opacity: 0; pointer-events: none; transition: opacity .45s var(--ease); }
+    .stage.camera .cam { opacity: 1; pointer-events: auto; }
+    .stage.camera .stage-hint { opacity: 0; }
+    .cam video, .cam .freeze { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .cam .freeze { opacity: 0; transition: opacity .2s; }
+    .cam.frozen .freeze { opacity: 1; }
+    .cam-frame { position: absolute; left: 50%; top: 50%; width: min(56%, 420px); aspect-ratio: 3/4; transform: translate(-50%,-50%); pointer-events: none; }
+    .cam-frame i { position: absolute; width: 28px; height: 28px; border: 2px solid rgba(255,255,255,.85); }
+    .cam-frame i:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; }
+    .cam-frame i:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; }
+    .cam-frame i:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; }
+    .cam-frame i:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+    .cam-frame .zone { position: absolute; left: 14%; right: 14%; top: 58%; bottom: 6%; border: 1px dashed rgba(255,255,255,.45); }
+    .cam-frame .zone span { position: absolute; left: 0; top: -26px; font-size: 14px; color: rgba(255,255,255,.8); }
+    .cam-note { position: absolute; left: 0; right: 0; bottom: var(--s3); text-align: center; color: rgba(255,255,255,.88); font-size: 16px; padding: 0 var(--s3); text-shadow: 0 1px 8px rgba(0,0,0,.5); }
+    .cam-count { position: absolute; inset: 0; display: grid; place-items: center; font: 400 clamp(96px, 16vw, 180px)/1 var(--serif); color: #fff; text-shadow: 0 2px 24px rgba(0,0,0,.35); pointer-events: none; }
+    .cam-scan { position: absolute; left: 0; right: 0; height: 2px; top: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.95), transparent); box-shadow: 0 0 24px 6px rgba(255,255,255,.35); opacity: 0; }
+    .cam.reading .cam-scan { opacity: 1; animation: scan 1.4s var(--ease) infinite alternate; }
+    @keyframes scan { from { top: 8%; } to { top: 92%; } }
+    .cam-swatches { position: absolute; right: var(--s3); top: var(--s3); display: flex; gap: 6px; }
+    .cam-swatches b { width: 22px; height: 22px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
+    .cam-pot { position: absolute; right: 4%; bottom: 0; width: min(42%, 380px); pointer-events: none; display: none; }
+    .stage.portrait .cam-pot { display: block; }
+    .stage.portrait .cam-frame .zone { display: none; }
 
-    /* Content */
-    .landing-inner {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      max-width: 600px;
-      padding: 3rem;
-      animation: fadeInScale 1.1s cubic-bezier(0.22,1,0.36,1) both;
+    /* panel */
+    .panel { background: var(--paper); overflow-y: auto; padding: var(--s4) var(--s4) var(--s6); display: flex; flex-direction: column; gap: var(--s4); }
+    .panel-head { display: flex; align-items: baseline; justify-content: space-between; }
+    .wordmark { font: 400 30px/1 var(--serif); letter-spacing: -.01em; text-decoration: none; color: inherit; }
+    .panel-head nav { display: flex; gap: var(--s3); font-size: 16px; }
+    .panel-head nav a { color: var(--muted); text-decoration: none; }
+    .panel-head nav a:hover { color: var(--ink); }
+
+    .modes { display: grid; grid-template-columns: 1fr 1fr; background: var(--bone); padding: 4px; border-radius: 999px; }
+    .modes button { min-height: 44px; border-radius: 999px; font-size: 17px; color: var(--muted); transition: background .25s, color .25s; }
+    .modes button[aria-selected="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 2px rgba(27,24,21,.12); }
+
+    .field label { display: block; font-size: 17px; margin-bottom: 6px; }
+    .field input { width: 100%; min-height: 52px; padding: 0 2px; background: transparent; border: 0; border-bottom: 1px solid var(--ink); font-size: 24px; outline: none; }
+    .field input::placeholder { color: rgba(27,24,21,.32); }
+    .field input:focus { border-bottom-width: 2px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--s2); }
+    .chip { min-height: 36px; padding: 0 14px; border-radius: 999px; background: var(--bone); font-size: 16px; transition: background .2s, color .2s; }
+    .chip:hover { background: #DDD6CA; }
+    .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+    .primary { width: 100%; min-height: 56px; background: var(--ink); color: var(--paper); font-size: 19px; border-radius: 2px; transition: transform .15s, opacity .2s; }
+    .primary:hover { opacity: .88; }
+    .primary:active { transform: scale(.99); }
+    .primary:disabled { opacity: .35; cursor: default; }
+    .ghost { min-height: 48px; padding: 0 var(--s2); font-size: 17px; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+    .fine { font-size: 15px; color: var(--muted); }
+    .msg { font-size: 16px; color: var(--muted); min-height: 1lh; }
+    .msg.err { color: #9B2C1F; }
+    .stack { display: flex; flex-direction: column; gap: var(--s2); }
+
+    /* the result, written like a museum label */
+    .label { border-top: 1px solid var(--ink); padding-top: var(--s3); display: flex; flex-direction: column; gap: var(--s2); animation: rise .7s var(--ease) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .label-no { font-size: 16px; color: var(--muted); }
+    .label h2 { font: 400 46px/1 var(--serif); letter-spacing: -.01em; }
+    .label-for { font-style: italic; font-size: 20px; }
+    .label dl { display: grid; grid-template-columns: 112px 1fr; row-gap: 10px; font-size: 17px; margin-top: var(--s1); }
+    .label dt { color: var(--muted); }
+    .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -1px; margin-right: 8px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+    .map { margin-top: var(--s1); }
+    .map svg { width: 100%; height: auto; display: block; background: var(--bone); }
+    .map figcaption { margin-top: 8px; }
+    .label-actions { display: flex; flex-direction: column; gap: 4px; align-items: stretch; margin-top: var(--s1); }
+    .label-actions .ghost { align-self: flex-start; padding-left: 0; }
+
+    /* ── Below the fold ─────────────────────────────────────────────── */
+    .sec { padding: var(--s8) clamp(24px, 4vw, 64px); display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); column-gap: 24px; row-gap: var(--s3); }
+    .sec + .sec { padding-top: 0; }
+    .sec-h { grid-column: 1 / 4; font: 400 15px/1.4 var(--text); color: var(--muted); }
+    .sec-body { grid-column: 4 / 13; }
+    .sec h2 { font: 400 clamp(36px, 4.4vw, 60px)/1.04 var(--serif); letter-spacing: -.01em; max-width: 18ch; }
+    .archive { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--s4) var(--s3); margin-top: var(--s4); }
+    .archive li figure { display: flex; flex-direction: column; gap: 8px; }
+    .archive img { width: 100%; aspect-ratio: 4/5; object-fit: contain; background: var(--bone); }
+    .archive figcaption { font-size: 15px; line-height: 1.35; }
+    .archive figcaption span { display: block; color: var(--muted); }
+    .empty { margin-top: var(--s3); color: var(--muted); }
+    .about-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); margin-top: var(--s4); }
+    .about-cols p + p { margin-top: var(--s2); }
+    .steps { list-style: none; counter-reset: s; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); margin-top: var(--s6); }
+    .steps li { counter-increment: s; }
+    .steps li::before { content: counter(s, decimal-leading-zero); display: block; font: 400 44px/1 var(--serif); margin-bottom: var(--s2); }
+    .steps h3 { font: 500 18px/1.3 var(--text); margin-bottom: 6px; }
+    .steps p { color: var(--muted); font-size: 17px; }
+    footer { display: flex; justify-content: space-between; gap: var(--s3); padding: var(--s4) clamp(24px, 4vw, 64px) var(--s6); font-size: 15px; color: var(--muted); }
+
+    /* portrait result */
+    dialog.portrait { border: 0; padding: 0; background: var(--paper); color: var(--ink); width: min(960px, 94vw); max-height: 94vh; margin: auto; }
+    dialog.portrait::backdrop { background: rgba(14,13,12,.82); }
+    .portrait-in { display: grid; grid-template-columns: minmax(0,1fr) 260px; }
+    .portrait-in img { width: 100%; height: auto; display: block; background: #111; }
+    .portrait-side { padding: var(--s3); display: flex; flex-direction: column; gap: var(--s2); }
+    .portrait-side h3 { font: 400 30px/1.05 var(--serif); }
+    #pb-qr { background: #fff; padding: 10px; align-self: flex-start; }
+    .x { position: absolute; right: 8px; top: 4px; font-size: 30px; line-height: 1; width: 44px; height: 44px; color: var(--paper); }
+    dialog.portrait .x { color: var(--ink); }
+
+    /* loading veil over the stage while a vessel is thrown */
+    .veil { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(233,228,219,.72); backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .3s; }
+    .veil.on { opacity: 1; }
+    .veil p { font-size: 19px; font-style: italic; }
+
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; grid-template-rows: 62svh auto; height: auto; min-height: 0; }
+      .panel { overflow: visible; padding: var(--s3) var(--s3) var(--s6); }
+      .sec { grid-template-columns: 1fr; padding: var(--s6) var(--s3); }
+      .sec-h, .sec-body { grid-column: 1 / -1; }
+      .about-cols, .steps { grid-template-columns: 1fr; }
+      .portrait-in { grid-template-columns: 1fr; }
+      .cam-frame { width: 62%; }
+      .label h2 { font-size: 40px; }
     }
-    .landing-word {
-      font-family: 'Bodoni Moda', serif;
-      font-size: clamp(4.5rem, 13vw, 9rem);
-      font-weight: 400;
-      line-height: 0.86;
-      letter-spacing: -0.02em;
-      color: var(--cream);
-      margin-bottom: 1.8rem;
-    }
-    .landing-desc {
-      font-family: 'EB Garamond', serif;
-      font-size: clamp(1.05rem, 2.8vw, 1.4rem);
-      line-height: 1.70;
-      color: rgba(245,243,238,0.60);
-      margin-bottom: 3rem;
-      max-width: 400px;
-    }
-    .landing-desc em { font-style: italic; color: rgba(245,243,238,0.92); }
-    .landing-options { display: flex; flex-direction: column; gap: 0.9rem; }
-    .landing-btn {
-      display: flex;
-      align-items: center;
-      gap: 1.1rem;
-      background: none;
-      border: 1px solid rgba(245,243,238,0.20);
-      color: var(--cream);
-      font-family: 'Bodoni Moda', serif;
-      font-size: 0.64rem;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      padding: 1.1rem 1.8rem;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .landing-btn:hover { border-color: rgba(245,243,238,0.70); background: rgba(245,243,238,0.04); }
-    .landing-arrow {
-      font-size: 1rem;
-      display: inline-block;
-      animation: arrowPulse 1.5s ease-in-out infinite;
-    }
-    @keyframes arrowPulse {
-      0%,100% { transform: translateX(0); }
-      50%     { transform: translateX(6px); }
-    }
-    .landing-tap {
-      margin-top: 2.6rem;
-      font-size: 0.42rem;
-      letter-spacing: 0.20em;
-      text-transform: uppercase;
-      color: rgba(245,243,238,0.16);
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
     }
   </style>
 </head>
+
 <body>
-
-  <!-- ══════════════════════════════════════════════════════════════
-       LANDING OVERLAY
-  ══════════════════════════════════════════════════════════════ -->
+  <!-- Arrival -->
   <div class="landing" id="landing">
-
-    <!-- ── Botanical background ── -->
     <div class="lf-bg">
 
       <!-- Top-right large flower cluster -->
@@ -1197,408 +336,891 @@
       </div>
     </div>
 
-    <!-- ── Content ── -->
+
     <div class="landing-inner">
-      <div class="landing-word">VESSEL</div>
-      <p class="landing-desc">
-        Type your personality — or let the camera read you.<br>
-        <em>You'll receive a ceramic flower pot that is entirely yours.</em>
-      </p>
+      <h1 class="landing-word">VESSEL</h1>
+      <p class="landing-line">A ceramic flower pot for who you are today.</p>
+      <p class="landing-sub">Describe yourself in a few words, or let the camera read the colours you wear. Your form, glaze and flowers come from a colour-emotion map.</p>
       <div class="landing-options">
-        <button class="landing-btn" id="lo-type">
-          <span class="landing-arrow">→</span>
-          Write your traits
-        </button>
-        <button class="landing-btn" id="lo-scan">
-          <span class="landing-arrow">→</span>
-          Scan yourself
-        </button>
+        <button class="landing-btn" id="lo-words" type="button">Write a few words <span class="arrow" aria-hidden="true">&rarr;</span></button>
+        <button class="landing-btn" id="lo-camera" type="button">Use the camera <span class="arrow" aria-hidden="true">&rarr;</span></button>
       </div>
-      <p class="landing-tap">or tap anywhere to begin</p>
     </div>
+    <p class="landing-credit">An installation by Yenlik Abdissattar, 2026</p>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════
-       HERO — full screen
-  ══════════════════════════════════════════════════════════════ -->
-  <div class="hero">
+  <main>
+    <div class="app">
+      <!-- Stage: the vessel, or the camera -->
+      <div class="stage" id="stage">
+        <div id="main-3d" aria-label="Your vessel in 3D. Drag to turn it."></div>
+        <p class="stage-title" id="stage-title">A vessel waiting for you</p>
+        <p class="stage-hint">Drag to turn &middot; pinch or scroll to come closer</p>
+        <div class="veil" id="veil"><p id="veil-text">Throwing your vessel&hellip;</p></div>
 
-    <!-- Left: controls -->
-    <div class="hero-left">
-      <div class="wordmark">VESSEL</div>
-      <p class="tagline">Personality → Ceramic Form · 2026</p>
-
-      <!-- Mode tabs -->
-      <div class="mode-tabs">
-        <button class="mode-tab active" data-panel="type">Type traits</button>
-        <button class="mode-tab" data-panel="scan">Scan person</button>
+        <div class="cam" id="cam">
+          <video id="cam-video" autoplay playsinline muted></video>
+          <img class="freeze" id="cam-freeze" alt="">
+          <div class="cam-frame" aria-hidden="true"><i></i><i></i><i></i><i></i><div class="zone"><span>colour is read here</span></div></div>
+          <div class="cam-scan"></div>
+          <div class="cam-swatches" id="cam-swatches" aria-hidden="true"></div>
+          <img class="cam-pot" id="cam-pot" alt="">
+          <div class="cam-count" id="cam-count" aria-live="assertive"></div>
+          <p class="cam-note" id="cam-note">Stand inside the frame, about an arm&rsquo;s length away.</p>
+        </div>
       </div>
 
-      <!-- Type panel -->
-      <div class="mode-panel active" id="panel-type">
-        <div>
-          <label class="field-label" for="main-input">Personality traits</label>
-          <input type="text" id="main-input" class="field-input"
-            placeholder="anxious, serene, chaotic…" autocomplete="off" spellcheck="false">
-        </div>
-        <div>
-          <label class="field-label" for="main-label">Name or tag (optional)</label>
-          <input type="text" id="main-label" class="field-input"
-            placeholder="your name, a word…" autocomplete="off" maxlength="60">
-        </div>
-        <button id="gen-btn" class="btn-primary">Generate vessel</button>
-      </div>
+      <!-- Panel -->
+      <section class="panel" aria-label="Make a vessel">
+        <header class="panel-head">
+          <a class="wordmark" href="#" id="home-link">VESSEL</a>
+          <nav><a href="#archive">Archive</a><a href="#about">About</a></nav>
+        </header>
 
-      <!-- Scan panel -->
-      <div class="mode-panel" id="panel-scan">
-        <div class="cam-wrap">
-          <video id="left-video" autoplay playsinline muted></video>
-          <canvas id="left-canvas"></canvas>
-          <div class="cam-overlay"><div class="cam-reticle"></div></div>
-          <button class="scan-back-btn" id="scan-back-btn">← Type traits</button>
+        <div class="modes" role="tablist" aria-label="How to make your vessel">
+          <button role="tab" id="tab-words" aria-selected="true" aria-controls="mode-words" type="button">Words</button>
+          <button role="tab" id="tab-camera" aria-selected="false" aria-controls="mode-camera" type="button">Camera</button>
         </div>
-        <div class="scan-bottom-bar">
-          <div class="swatches" id="left-swatches">
-            <div class="swatch-row">
-              <div class="swatch-dot" id="lsw0"></div>
-              <div class="swatch-dot" id="lsw1"></div>
-              <div class="swatch-dot" id="lsw2"></div>
-              <div class="swatch-dot" id="lsw3"></div>
-              <div class="swatch-dot" id="lsw4"></div>
-            </div>
-            <span class="swatch-cap">Live colour from clothing</span>
+
+        <div id="mode-words" role="tabpanel" aria-labelledby="tab-words" class="stack">
+          <div class="field">
+            <label for="traits">Describe yourself in a few words</label>
+            <input id="traits" type="text" placeholder="gentle, nostalgic" autocomplete="off" spellcheck="false" enterkeyhint="go">
+            <div class="chips" id="chips" aria-label="Words to choose from"></div>
           </div>
-          <div style="display:flex;gap:0.7rem;align-items:flex-end;flex-wrap:wrap;">
-            <div style="flex:1;min-width:110px;">
-              <label class="field-label" for="scan-label">Name (optional)</label>
-              <input type="text" id="scan-label" class="field-input"
-                placeholder="your name…" autocomplete="off" maxlength="60">
-            </div>
-            <button id="left-cam-start" class="btn-outline">Enable camera</button>
-            <button id="snap-btn" class="btn-primary" disabled style="display:none">Capture</button>
+          <button class="primary" id="make" type="button">Make my vessel</button>
+        </div>
+
+        <div id="mode-camera" role="tabpanel" aria-labelledby="tab-camera" class="stack" hidden>
+          <p id="cam-status">The camera reads the colours you wear and places them on the colour-emotion map.</p>
+          <button class="primary" id="shutter" type="button" disabled>Take the reading</button>
+          <button class="ghost" id="cam-retry" type="button" hidden>Try the camera again</button>
+          <p class="fine" id="cam-privacy">Nothing leaves this device: the reading happens in your browser.</p>
+        </div>
+
+        <p class="msg" id="msg" role="status" aria-live="polite"></p>
+
+        <article class="label" id="label" hidden aria-live="polite">
+          <p class="label-no num">No. <span id="l-no">001</span></p>
+          <h2 id="l-form">Moon jar</h2>
+          <p class="label-for" id="l-for"></p>
+          <dl>
+            <dt>Glaze</dt><dd id="l-glaze"></dd>
+            <dt>Clay</dt><dd id="l-clay"></dd>
+            <dt>Flowers</dt><dd id="l-flowers"></dd>
+            <dt>Colour key</dt><dd id="l-key"></dd>
+          </dl>
+          <figure class="map">
+            <svg id="l-map" viewBox="-150 -122 300 252" role="img" aria-label="Colour-emotion map with your position"></svg>
+            <figcaption class="fine">Your place on the colour-emotion map. The glaze is mixed from the colours nearest to you; the flowers answer it.</figcaption>
+          </figure>
+          <div class="label-actions">
+            <button class="primary" id="portrait" type="button">Take a portrait with your vessel</button>
+            <button class="ghost" id="save" type="button">Save the vessel as an image</button>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <section class="sec" id="archive" aria-labelledby="archive-h">
+      <p class="sec-h">Archive</p>
+      <div class="sec-body">
+        <h2 id="archive-h">Vessels made here</h2>
+        <ol class="archive" id="archive-list"></ol>
+        <p class="empty" id="archive-empty">Nothing yet. Your first vessel will be kept here, on this device.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="about" aria-labelledby="about-h">
+      <p class="sec-h">About</p>
+      <div class="sec-body">
+        <h2 id="about-h">Can a vessel hold a personality the way it holds water?</h2>
+        <div class="about-cols">
+          <div>
+            <p>A flower pot is a vessel. It holds something living, and it has a shape, a surface and a weight of its own. VESSEL asks which one you would be: not from a quiz, but from the words you choose or the colours you wear today.</p>
+            <p>No two vessels are the same. Form, glaze, clay and flowers are all decided in the moment you arrive.</p>
+          </div>
+          <div>
+            <p>The system rests on a colour study: a map of emotions drawn on two axes, pleasure and arousal, with a colour placed at each feeling. Every word you give, and every colour the camera sees, becomes a point on that map.</p>
+            <p>At the exhibition, four Claude agents read each visitor: an Observer, a Vessel Maker, a Poet and a Director. This web version uses the same map and rules in your browser.</p>
           </div>
         </div>
+        <ol class="steps">
+          <li><h3>A point on the map</h3><p>Words are placed by how pleasant and how energetic they feel; colours by where they sit in the study.</p></li>
+          <li><h3>Glaze and flowers</h3><p>The glaze is mixed from the nearest colours. Calm points get analogous flowers, restless ones a complementary clash.</p></li>
+          <li><h3>Form and surface</h3><p>Soft, settled feelings throw round jars; tense ones tall bottles; energy shows as fluting, dots or an unruly wobble.</p></li>
+        </ol>
       </div>
+    </section>
+  </main>
 
-      <p class="gen-status" id="gen-status"></p>
-      <p class="gen-error" id="gen-error" style="display:none"></p>
+  <footer><span>VESSEL &middot; Yenlik Abdissattar &middot; 2026</span><span>Interactive installation, AI Agents, Yonsei University</span></footer>
 
-      <div class="trait-hint">
-        anxious · serene · chaotic · nostalgic · melancholic<br>
-        playful · mysterious · ethereal · gentle · warm<br>
-        romantic · dreamy · wild · bold · whimsical
-      </div>
-    </div>
-
-    <!-- Right: 3D viewer + render strip -->
-    <div class="hero-right">
-      <div id="main-3d"></div>
-      <span class="viewer-hint">Drag to inspect · scroll to zoom</span>
-      <button class="result-reveal-btn" id="result-reveal-btn">View your vessel →</button>
-
-      <!-- Loading overlay -->
-      <div class="gen-loading" id="gen-loading">
-        <div class="vl-plant">
-          <svg viewBox="0 0 100 140" width="60" height="84" aria-hidden="true">
-            <path pathLength="1" class="vl-draw vl-pot"
-              d="M20,128 L15,62 L85,62 L80,128 Q79,133 50,133 Q21,133 20,128 Z"/>
-            <line pathLength="1" class="vl-draw vl-rim" x1="10" y1="62" x2="90" y2="62"/>
-            <line pathLength="1" class="vl-draw vl-stem" x1="50" y1="62" x2="50" y2="33"/>
-            <path pathLength="1" class="vl-draw vl-leaf1" d="M50,50 Q38,46 32,48 Q36,54 50,50 Z"/>
-            <path pathLength="1" class="vl-draw vl-leaf2" d="M50,40 Q62,36 68,38 Q64,44 50,40 Z"/>
-            <circle pathLength="1" class="vl-draw vl-ctr" cx="50" cy="18" r="7"/>
-            <line pathLength="1" class="vl-draw vl-pet" x1="57" y1="18" x2="65" y2="18"/>
-            <line pathLength="1" class="vl-draw vl-pet" x1="55" y1="23" x2="61" y2="28" style="animation-delay:2.55s"/>
-            <line pathLength="1" class="vl-draw vl-pet" x1="50" y1="25" x2="50" y2="33" style="animation-delay:2.60s"/>
-            <line pathLength="1" class="vl-draw vl-pet" x1="45" y1="23" x2="39" y2="28" style="animation-delay:2.65s"/>
-            <line pathLength="1" class="vl-draw vl-pet" x1="43" y1="18" x2="35" y2="18" style="animation-delay:2.70s"/>
-            <line pathLength="1" class="vl-draw vl-pet" x1="45" y1="13" x2="39" y2="8" style="animation-delay:2.75s"/>
-            <line pathLength="1" class="vl-draw vl-pet" x1="50" y1="11" x2="50" y2="3" style="animation-delay:2.80s"/>
-            <line pathLength="1" class="vl-draw vl-pet" x1="55" y1="13" x2="61" y2="8" style="animation-delay:2.85s"/>
-          </svg>
-        </div>
-        <p class="loading-phase" id="loading-phase">Reading traits</p>
-        <div class="loading-bar"></div>
-      </div>
-
-      <!-- Render strip (shown after generation) -->
-      <div class="render-strip" id="render-strip">
-        <img id="strip-img" src="" alt="" crossorigin="anonymous">
-        <div class="render-strip-meta">
-          <div class="render-strip-traits" id="strip-traits"></div>
-          <div class="render-strip-sub">Your vessel</div>
-        </div>
-        <button class="photobooth-trigger" id="photobooth-btn">
-          Take a photo with your vessel
-        </button>
+  <dialog class="portrait" id="portrait-dialog" aria-labelledby="portrait-h">
+    <button class="x" id="portrait-close" type="button" aria-label="Close">&times;</button>
+    <div class="portrait-in">
+      <img id="portrait-img" alt="You with your vessel">
+      <div class="portrait-side">
+        <h3 id="portrait-h">You and your vessel</h3>
+        <div id="pb-qr" hidden></div>
+        <p class="fine" id="pb-qr-note" hidden>Scan to keep your portrait.</p>
+        <button class="primary" id="portrait-download" type="button">Download the portrait</button>
+        <button class="ghost" id="portrait-retake" type="button">Take it again</button>
       </div>
     </div>
-  </div>
+  </dialog>
 
-  <!-- ══════════════════════════════════════════════════════════════
-       RECENTS
-  ══════════════════════════════════════════════════════════════ -->
-  <section class="light-section">
-    <div class="sec-header">
-      <span class="sec-num">Recents</span>
-      <span class="sec-title">Vessels Generated Today</span>
-    </div>
-    <div class="recents-scroll" id="recents-scroll"></div>
-  </section>
+  <script>
+  /* ═══════════════════════════════════════════════════════════════════════
+     VESSEL engine: words or colours → a point on the colour-emotion map →
+     form, surface, glaze, clay, finish and flowers.
 
-  <!-- ══════════════════════════════════════════════════════════════
-       ABOUT
-  ══════════════════════════════════════════════════════════════ -->
-  <section class="light-section">
-    <div class="sec-header">
-      <span class="sec-num">About</span>
-      <span class="sec-title">The Work</span>
-    </div>
-    <div class="about-grid" style="grid-template-columns: 180px 1fr 1fr;">
-      <div class="about-col" style="background:#F0EEE9;"></div>
-      <div class="about-col">
-        <p>Can a ceramic vessel hold a personality the way it holds water? <em>VESSEL</em> translates feeling into form — each pot shaped by the traits you bring to it.</p>
-        <p>Type a word, or let the camera read you. No two vessels are the same.</p>
-      </div>
-      <div class="about-col">
-        <p><em>Shape, glaze, and flower species are all determined by who you are in the moment you arrive.</em></p>
-        <p>Take a photo with your vessel. The archive grows with each visitor.</p>
-      </div>
-    </div>
-  </section>
+     The map is the colour study (Colour Design): emotions placed on two axes,
+     pleasure (x) and arousal (y), each with its own colour. The anchors below
+     are measured from that study. Shape rules come from the character
+     psychology research: round and soft reads friendly, tall and thin reads
+     anxious or ethereal, a wide top reads dominant, a wide base grounded.
+  ═══════════════════════════════════════════════════════════════════════ */
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-l">
-      VESSEL — Yenlik Abdissattar — 2026
-    </div>
-    <div class="footer-r">
-      AI-driven generative ceramics
-    </div>
-  </footer>
+  // Exhibition: set SERVER to the machine running api.py to use Claude vision
+  // for the camera and to save photobooth portraits for the QR code.
+  const SERVER = '';
+  const API_HEADERS = {'Content-Type':'application/json'};
 
-  <!-- ══════════════════════════════════════════════════════════════
-       PHOTOBOOTH MODAL
-  ══════════════════════════════════════════════════════════════ -->
-  <div class="pb-modal" id="pb-modal">
-    <div class="pb-topbar">
-      <span class="pb-title">Take a photo with your vessel</span>
-      <button class="pb-close" id="pb-close" aria-label="Close">×</button>
-    </div>
+  const Engine = (()=>{
+    // ── colour maths (OKLab: perceptual, so mixes and hue turns stay even) ──
+    const toLin = c => c <= 0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+    const toSrgb = c => c <= 0.0031308 ? 12.92*c : 1.055*Math.pow(c, 1/2.4) - 0.055;
+    function rgb2lab([r,g,b]){
+      r=toLin(r); g=toLin(g); b=toLin(b);
+      const l=Math.cbrt(0.4122214708*r+0.5363325363*g+0.0514459929*b);
+      const m=Math.cbrt(0.2119034982*r+0.6806995451*g+0.1073969566*b);
+      const s=Math.cbrt(0.0883024619*r+0.2817188376*g+0.6299787005*b);
+      return [0.2104542553*l+0.7936177850*m-0.0040720468*s,
+              1.9779984951*l-2.4285922050*m+0.4505937099*s,
+              0.0259040371*l+0.7827717662*m-0.8086757660*s];
+    }
+    function lab2rgbRaw([L,a,b]){
+      const l=(L+0.3963377774*a+0.2158037573*b)**3, m=(L-0.1055613458*a-0.0638541728*b)**3, s=(L-0.0894841775*a-1.2914855480*b)**3;
+      return [4.0767416621*l-3.3077115913*m+0.2309699292*s, -1.2684380046*l+2.6097574011*m-0.3413193965*s, -0.0041960863*l-0.7034186147*m+1.7076147010*s];
+    }
+    const inGamut = c => c.every(v => v >= -0.001 && v <= 1.001);
+    function lch2rgb(L,C,h){              // reduce chroma until the colour exists in sRGB
+      let lin;
+      for(let i=0;i<40;i++){ lin=lab2rgbRaw([L, C*Math.cos(h), C*Math.sin(h)]); if(inGamut(lin)) break; C*=0.93; }
+      return lin.map(v => Math.min(1, Math.max(0, toSrgb(Math.min(1, Math.max(0, v))))));
+    }
+    const lab2lch = ([L,a,b]) => [L, Math.hypot(a,b), Math.atan2(b,a)];
+    const hex2rgb = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16)/255);
+    const rgb2hex = c => '#'+c.map(v => Math.round(v*255).toString(16).padStart(2,'0')).join('');
+    const dist = (p,q) => Math.hypot(p[0]-q[0], p[1]-q[1]);
+    const deg = Math.PI/180;
 
-    <!-- Phase 1: camera aim + capture -->
-    <div class="pb-phase active" id="pb-aim-phase">
-      <div class="pb-aim">
-        <div class="pb-aim-inner">
-          <video id="pb-video" autoplay playsinline muted></video>
-          <canvas id="pb-canvas"></canvas>
-          <div class="pb-aim-overlay">
-            <div class="pb-aim-reticle"></div>
-          </div>
-          <div class="pb-countdown-display" id="pb-countdown"></div>
-          <!-- Floral frame — sits above video, below vessel -->
-          <svg id="pb-frame-svg" viewBox="0 0 160 90" xmlns="http://www.w3.org/2000/svg"
-               style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:visible">
-            <!-- ══ TOP-LEFT ══ -->
-            <g transform="translate(14,12)">
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(0,0,0)"   fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(45,0,0)"  fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(90,0,0)"  fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(135,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(180,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(225,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(270,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(315,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <circle cx="0" cy="0" r="2.0" fill="#c8883c" fill-opacity="0.92"/>
-              <path d="M2,3 C5,8 9,13 11,19 C13,23 15,27 16,32" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.80"/>
-              <g transform="translate(9,14) rotate(35)"><path d="M0,0 C-3.5,-2 -3,-8 0,-10 C3,-8 3.5,-2 0,0 Z" fill="#4a8030" fill-opacity="0.78"/></g>
-              <g transform="translate(15,26) rotate(-20)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#5a9040" fill-opacity="0.72"/></g>
-              <g transform="translate(17,33)">
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(0,0,0)"   fill="#f0b0c0" fill-opacity="0.82"/>
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(72,0,0)"  fill="#f0b0c0" fill-opacity="0.82"/>
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(144,0,0)" fill="#f0b0c0" fill-opacity="0.82"/>
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(216,0,0)" fill="#f0b0c0" fill-opacity="0.82"/>
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(288,0,0)" fill="#f0b0c0" fill-opacity="0.82"/>
-                <circle cx="0" cy="0" r="1.4" fill="#c8883c" fill-opacity="0.88"/>
-              </g>
-              <path d="M-3,3 C-6,9 -6,18 -5,26" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.75"/>
-              <g transform="translate(-5,15) rotate(145)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#4a8030" fill-opacity="0.72"/></g>
-              <path d="M6,-1 C14,-4 24,-3 34,-4 C42,-3 50,-5 58,-4 C66,-3 74,-5 80,-4" stroke="#3a6025" stroke-width="0.65" fill="none" stroke-opacity="0.48"/>
-              <g transform="translate(34,-4) rotate(-78)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.60"/></g>
-              <g transform="translate(58,-4) rotate(86)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.54"/></g>
-              <g transform="translate(78,-4) rotate(-82)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.46"/></g>
-              <path d="M-4,5 C-8,12 -8,22 -6,32 C-5,42 -8,50 -6,60" stroke="#3a6025" stroke-width="0.65" fill="none" stroke-opacity="0.48"/>
-              <g transform="translate(-6,22) rotate(168)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.58"/></g>
-              <g transform="translate(-6,42) rotate(4)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.50"/></g>
-            </g>
-            <!-- ══ TOP-RIGHT (horizontal mirror) ══ -->
-            <g transform="translate(146,12) scale(-1,1)">
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(0,0,0)"   fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(45,0,0)"  fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(90,0,0)"  fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(135,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(180,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(225,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(270,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <ellipse cx="0" cy="-5" rx="1.7" ry="3.0" transform="rotate(315,0,0)" fill="#f2e0b0" fill-opacity="0.88"/>
-              <circle cx="0" cy="0" r="2.0" fill="#c8883c" fill-opacity="0.92"/>
-              <path d="M2,3 C5,8 9,13 11,19 C13,23 15,27 16,32" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.80"/>
-              <g transform="translate(9,14) rotate(35)"><path d="M0,0 C-3.5,-2 -3,-8 0,-10 C3,-8 3.5,-2 0,0 Z" fill="#4a8030" fill-opacity="0.78"/></g>
-              <g transform="translate(15,26) rotate(-20)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#5a9040" fill-opacity="0.72"/></g>
-              <g transform="translate(17,33)">
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(0,0,0)"   fill="#b0c8f0" fill-opacity="0.82"/>
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(72,0,0)"  fill="#b0c8f0" fill-opacity="0.82"/>
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(144,0,0)" fill="#b0c8f0" fill-opacity="0.82"/>
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(216,0,0)" fill="#b0c8f0" fill-opacity="0.82"/>
-                <ellipse cx="0" cy="-3.5" rx="1.2" ry="2.2" transform="rotate(288,0,0)" fill="#b0c8f0" fill-opacity="0.82"/>
-                <circle cx="0" cy="0" r="1.4" fill="#c8883c" fill-opacity="0.88"/>
-              </g>
-              <path d="M-3,3 C-6,9 -6,18 -5,26" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.75"/>
-              <g transform="translate(-5,15) rotate(145)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#4a8030" fill-opacity="0.72"/></g>
-              <path d="M6,-1 C14,-4 24,-3 34,-4 C42,-3 50,-5 58,-4 C66,-3 74,-5 80,-4" stroke="#3a6025" stroke-width="0.65" fill="none" stroke-opacity="0.48"/>
-              <g transform="translate(34,-4) rotate(-78)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.60"/></g>
-              <g transform="translate(58,-4) rotate(86)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.54"/></g>
-              <path d="M-4,5 C-8,12 -8,22 -6,32 C-5,42 -8,50 -6,60" stroke="#3a6025" stroke-width="0.65" fill="none" stroke-opacity="0.48"/>
-              <g transform="translate(-6,22) rotate(168)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.58"/></g>
-              <g transform="translate(-6,42) rotate(4)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.50"/></g>
-            </g>
-            <!-- ══ BOTTOM-LEFT accent ══ -->
-            <g transform="translate(7,82)">
-              <path d="M0,0 C3,-5 7,-8 11,-13" stroke="#3a6025" stroke-width="0.85" fill="none" stroke-opacity="0.70"/>
-              <g transform="translate(6,-7) rotate(52)"><path d="M0,0 C-2.2,-1.2 -2,-5.5 0,-6.8 C2,-5.5 2.2,-1.2 0,0 Z" fill="#4a8030" fill-opacity="0.70"/></g>
-              <g transform="translate(11,-13)">
-                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(0,0,0)"   fill="#f2c8a0" fill-opacity="0.80"/>
-                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(72,0,0)"  fill="#f2c8a0" fill-opacity="0.80"/>
-                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(144,0,0)" fill="#f2c8a0" fill-opacity="0.80"/>
-                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(216,0,0)" fill="#f2c8a0" fill-opacity="0.80"/>
-                <ellipse cx="0" cy="-3.0" rx="1.1" ry="2.0" transform="rotate(288,0,0)" fill="#f2c8a0" fill-opacity="0.80"/>
-                <circle cx="0" cy="0" r="1.2" fill="#c8883c" fill-opacity="0.85"/>
-              </g>
-            </g>
-            <!-- ══ BOTTOM-RIGHT subtle (vessel here) ══ -->
-            <g transform="translate(155,83) scale(-1,1)">
-              <path d="M0,0 C3,-4 5,-7 7,-10" stroke="#3a6025" stroke-width="0.70" fill="none" stroke-opacity="0.42"/>
-              <g transform="translate(6,-8) rotate(48)"><path d="M0,0 C-2,-1 -1.8,-4.5 0,-5.8 C1.8,-4.5 2,-1 0,0 Z" fill="#4a8030" fill-opacity="0.46"/></g>
-            </g>
-          </svg>
-          <!-- 3D vessel lives here during photobooth -->
-          <div class="pb-vessel-overlay" id="pb-vessel-overlay"></div>
-        </div>
-      </div>
-      <div class="pb-aim-bottom">
-        <div class="pb-size-btns">
-          <button class="pb-size-btn" id="pb-size-dn" title="Smaller">−</button>
-          <button class="pb-size-btn" id="pb-size-up" title="Bigger">+</button>
-        </div>
-        <button class="pb-capture-btn" id="pb-capture-btn">Capture</button>
-      </div>
-    </div>
+    // ── the colour study: [feeling, pleasure, arousal, colour] ──
+    const ANCHORS = [
+      ['Surprised', 0.09, 0.79,'#f9ef04'], ['Afraid',  -0.23, 0.66,'#ed1b24'],
+      ['Excited',   0.49, 0.48,'#ed0280'], ['Peaceful', 0.14, 0.30,'#6dc499'],
+      ['Angry',    -0.70, 0.26,'#951a1d'], ['Happy',    0.69, 0.12,'#af79b5'],
+      ['Calm',      0.11,-0.19,'#82d5f7'], ['Bored',   -0.98,-0.35,'#523837'],
+      ['Relaxed',   0.47,-0.42,'#978cc4'], ['Sleepy',   0.03,-0.86,'#bce4df'],
+    ].map(([name,v,a,hex]) => ({name, p:[v,a], hex, lab:rgb2lab(hex2rgb(hex))}));
 
-    <!-- Phase 2: result + QR -->
-    <div class="pb-phase" id="pb-result-phase">
-      <div class="pb-composite single" id="pb-composite">
-        <img id="pb-composite-img" alt="You and your vessel">
-      </div>
-      <div class="pb-qr-block">
-        <div id="pb-qr"></div>
-        <p class="pb-qr-label">Scan to keep your vessel</p>
-        <div class="pb-qr-timer" id="pb-qr-timer">
-          <svg width="54" height="54" viewBox="0 0 54 54">
-            <circle class="pb-qr-timer-track" cx="27" cy="27" r="23"/>
-            <circle class="pb-qr-timer-ring"  cx="27" cy="27" r="23" id="pb-qr-ring"/>
-          </svg>
-          <div class="pb-qr-timer-num" id="pb-qr-num">10</div>
-        </div>
-        <p class="pb-qr-expire">link expires soon</p>
-      </div>
-      <div class="pb-actions">
-        <button class="pb-download" id="pb-download">Download composite</button>
-        <button class="pb-retake" id="pb-retake">Retake photo</button>
-      </div>
-      <p class="pb-restart-bar" id="pb-restart-bar"></p>
-    </div>
-  </div>
+    // ── the words a visitor can use: [pleasure, arousal] ──
+    const WORDS = {
+      anxious:[-0.45,0.62], nervous:[-0.40,0.55], afraid:[-0.30,0.72], frantic:[-0.30,0.92],
+      chaotic:[-0.12,0.88], intense:[-0.08,0.78], wild:[0.20,0.86], surprised:[0.08,0.82],
+      bold:[0.35,0.68], excited:[0.55,0.66], bubbly:[0.72,0.62], playful:[0.70,0.55],
+      bright:[0.66,0.48], curious:[0.45,0.42], whimsical:[0.58,0.38], confident:[0.52,0.30],
+      happy:[0.82,0.18], warm:[0.64,0.08], romantic:[0.62,0.12], peaceful:[0.30,-0.25],
+      gentle:[0.55,-0.36], tender:[0.58,-0.30], relaxed:[0.52,-0.46], serene:[0.42,-0.56],
+      dreamy:[0.36,-0.62], ethereal:[0.30,-0.70], calm:[0.14,-0.38], elegant:[0.28,-0.18],
+      nostalgic:[0.18,-0.34], sleepy:[0.02,-0.86], stoic:[-0.06,-0.58], mysterious:[-0.22,-0.14],
+      cold:[-0.36,-0.34], dark:[-0.50,-0.22], melancholic:[-0.55,-0.44], sad:[-0.70,-0.50],
+      bored:[-0.78,-0.48], grumpy:[-0.62,0.12], jealous:[-0.60,0.42], angry:[-0.76,0.50],
+    };
+    const SUGGEST = ['gentle','nostalgic','playful','anxious','serene','bold','dreamy','curious','melancholic','warm','chaotic','elegant','stoic','romantic','wild','calm'];
 
-  <!-- ══════════════════════════════════════════════════════════════
-       THREE.JS VIEWER
-  ══════════════════════════════════════════════════════════════ -->
+    const SPECIES = {
+      anxious:['cosmos','tulip','lavender'], nervous:['cosmos','tulip','wildflower'], afraid:['tulip','poppy','iris'],
+      frantic:['sunflower','chrysanthemum','wildflower'], chaotic:['sunflower','carnation','chrysanthemum'],
+      intense:['rose','poppy','iris'], wild:['sunflower','wildflower','poppy'], surprised:['daffodil','sunflower','cosmos'],
+      bold:['sunflower','iris','lily'], excited:['daffodil','peony','sunflower'], bubbly:['daffodil','peony','daisy'],
+      playful:['daffodil','peony','cosmos'], bright:['sunflower','daffodil','daisy'], curious:['peony','orchid','daffodil'],
+      whimsical:['peony','cosmos','wildflower'], confident:['sunflower','tulip','lily'], happy:['daisy','daffodil','peony'],
+      warm:['sunflower','carnation','rose'], romantic:['rose','peony','carnation'], peaceful:['daisy','lotus','lavender'],
+      gentle:['daisy','peony','lavender'], tender:['daisy','carnation','rose'], relaxed:['lotus','daisy','lily'],
+      serene:['lotus','lily','daisy'], dreamy:['cosmos','peony','lavender'], ethereal:['lily','daisy','orchid'],
+      calm:['lily','lotus','daisy'], elegant:['orchid','lily','carnation'], nostalgic:['daisy','rose','lavender'],
+      sleepy:['lavender','lotus','daisy'], stoic:['iris','lily','lotus'], mysterious:['orchid','iris','cosmos'],
+      cold:['iris','tulip','lotus'], dark:['orchid','iris','wildflower'], melancholic:['cosmos','iris','lavender'],
+      sad:['lavender','orchid','tulip'], bored:['wildflower','iris','tulip'], grumpy:['carnation','wildflower','iris'],
+      jealous:['tulip','poppy','iris'], angry:['rose','poppy','wildflower'],
+    };
+    const PLURAL = {daisy:'daisies', lily:'lilies', iris:'irises', cosmos:'cosmos', lotus:'lotus', lavender:'lavender', wildflower:'wildflowers'};
+    const plural = s => PLURAL[s] || s+'s';
+
+    // named glazes, so each result can be called something a potter would say
+    const GLAZES = [['celadon','#9DB8A0'],['chun blue','#7F9DBE'],['cobalt','#2F4F8F'],['copper red','#9E2B25'],
+      ['iron red','#A4472B'],['tenmoku','#3A2A20'],['honey amber','#C08A3E'],['shino white','#EDE6DA'],['ash grey','#A9A49B'],
+      ['slate','#5A6470'],['oribe green','#3F6B4A'],['lavender','#A99BC6'],['rose','#D9A3AE'],['plum','#5E3352'],
+      ['saffron','#E2B53A'],['teal','#2E7C7A'],['sea glass','#B9DCD6'],['magenta','#B8336A'],['sky','#8FCBEA'],
+      ['jade','#6FAF8E'],['lilac','#B88CBF'],['coral','#E07A63'],['ink','#22201E'],['mulberry','#7A2E4A']]
+      .map(([n,h]) => ({n, lab:rgb2lab(hex2rgb(h))}));
+    const nameGlaze = rgb => { const l=rgb2lab(rgb); let best=GLAZES[0], d=1e9;
+      for(const g of GLAZES){ const e=Math.hypot(l[0]-g.lab[0], l[1]-g.lab[1], l[2]-g.lab[2]); if(e<d){d=e;best=g;} } return best.n; };
+
+    const FORMS = {
+      ovoid:     'Ovoid jar',       // near neutral
+      moonJar:   'Moon jar',        // pleasant and calm: round, soft, friendly
+      balloon:   'Balloon jar',     // pleasant and lively: exaggerated, playful
+      tallBottle:'Tall bottle',     // tense: thin, upright, anxious
+      flared:    'Flared vase',     // hostile and lively: wide top, dominant
+      cylinder:  'Cylinder',        // cool and reserved: plain, upright
+      lowJar:    'Low jar',         // heavy and low: wide base, grounded
+    };
+    function formAt([v,a]){
+      if(Math.hypot(v,a) < 0.24) return 'ovoid';
+      if(v >= 0) return a < 0 ? 'moonJar' : 'balloon';
+      if(a >= 0) return v < -0.55 ? 'flared' : 'tallBottle';
+      return a < -0.44 ? 'lowJar' : 'cylinder';
+    }
+    const SURFACE_BY_WORD = {
+      chaotic:'wobble', wild:'wobble', frantic:'wobble',
+      intense:'flutes', bold:'flutes', angry:'flutes', confident:'flutes', jealous:'flutes',
+      playful:'dots', bubbly:'dots', whimsical:'dots', happy:'dots', bright:'dots', excited:'dots',
+      nostalgic:'handles', romantic:'handles', tender:'handles', elegant:'handles',
+    };
+    function surfaceFor(words, [v,a]){
+      for(const w of words) if(SURFACE_BY_WORD[w]) return SURFACE_BY_WORD[w];
+      return a > 0.75 ? 'wobble' : a > 0.42 ? 'flutes' : 'plain';
+    }
+    const SURFACE_TEXT = {plain:'plain, with throwing lines', flutes:'carved flutes', dots:'raised dots', handles:'two loop handles', wobble:'an unruly, hand-pushed wall'};
+
+    // ── glaze: the three nearest colours of the study, mixed in OKLab ──
+    function glazeAt(p){
+      const near = ANCHORS.map(A => ({A, d:dist(p,A.p)})).sort((x,y) => x.d-y.d).slice(0,3);
+      let W=0; const lab=[0,0,0];
+      for(const {A,d} of near){ const w=1/(d*d+0.015); W+=w; lab[0]+=A.lab[0]*w; lab[1]+=A.lab[1]*w; lab[2]+=A.lab[2]*w; }
+      lab[0]/=W; lab[1]/=W; lab[2]/=W;
+      let [L,C,h] = lab2lch(lab);
+      const r = Math.min(1, Math.hypot(...p));     // the further from neutral, the stronger the colour
+      C *= (0.38 + 0.62*r) * 0.88;                 // glazes sit a little quieter than paint
+      L = Math.min(0.86, Math.max(0.34, L));
+      return {rgb: lch2rgb(L,C,h), L, C, h, near: near.map(n => n.A.name)};
+    }
+    // ── flowers answer the glaze with a harmony chosen by the feeling ──
+    function harmonyAt([v,a]){
+      if(Math.hypot(v,a) < 0.24) return {rule:'Split-complementary', mood:'balanced', turn:150};
+      if(a < -0.12) return {rule:'Analogous', mood:'settled', turn:34};
+      if(v >= 0)    return {rule:'Triadic', mood:'lively', turn:120};
+      return {rule:'Complementary', mood:'in tension', turn:180};
+    }
+    function finishAt([v,a]){
+      if(a > 0.35)  return {name:'gloss', rough:0.12, clearcoat:1.0};
+      if(a < -0.25) return {name:'matte', rough:0.80, clearcoat:0.0};
+      return {name:'satin', rough:0.40, clearcoat:0.35};
+    }
+    function clayAt([v,a]){
+      if(v < -0.35 && a < 0.15) return {name:'Dark stoneware', rgb:[0.30,0.25,0.21]};
+      if(v > 0.40 && a < 0)     return {name:'Porcelain', rgb:[0.93,0.91,0.87]};
+      return {name:'Buff stoneware', rgb:[0.80,0.70,0.57]};
+    }
+
+    function hash(str){ let h=2166136261; for(const c of str){ h^=c.charCodeAt(0); h=Math.imul(h,16777619); } return (h>>>0)/4294967296; }
+
+    function compose(point, words, opts={}){
+      const glaze = glazeAt(point);
+      let glazeRGB = glaze.rgb;
+      if(opts.wearRGB){                            // the camera: half the map, half what you wear
+        const g=rgb2lab(glazeRGB), w=rgb2lab(opts.wearRGB);
+        const [L,C,h] = lab2lch(g.map((x,i) => x*0.5 + w[i]*0.5));
+        glazeRGB = lch2rgb(Math.min(0.86,Math.max(0.3,L)), C, h);
+      }
+      const [gL,gC,gH] = lab2lch(rgb2lab(glazeRGB));
+      const harmony = harmonyAt(point);
+      const fL = gL > 0.70 ? 0.60 : 0.80;
+      const flowerRGB = lch2rgb(fL, Math.min(0.17, Math.max(0.11, gC*1.15)), gH + harmony.turn*deg);
+      const centreRGB = lch2rgb(0.80, 0.13, 80*deg);   // pollen gold, the same for every flower
+      const finish = finishAt(point), clay = clayAt(point);
+      const form = formAt(point), surface = surfaceFor(words, point);
+      let species = [];
+      for(const w of words) for(const s of (SPECIES[w]||[])) if(!species.includes(s)) species.push(s);
+      if(!species.length) species = ['daisy','cosmos','wildflower'];
+      species = species.slice(0,3);
+      const count = Math.round(5 + 6*(point[1]+1)/2);
+      const seed = hash(words.join(' ') + point.join(','));
+      return {point, words, form, formName:FORMS[form], surface, surfaceText:SURFACE_TEXT[surface],
+        glazeRGB, glazeHex:rgb2hex(glazeRGB), glazeName:nameGlaze(glazeRGB), near:glaze.near,
+        flowerRGB, flowerHex:rgb2hex(flowerRGB), centreRGB, harmony, finish, clay, species, count, seed,
+        source: opts.source || 'words'};
+    }
+
+    function parse(text){
+      const raw = String(text||'').toLowerCase().split(/[^a-z]+/).filter(Boolean);
+      const known=[], unknown=[];
+      for(const w of raw){ if(WORDS[w]){ if(!known.includes(w)) known.push(w); } else if(!unknown.includes(w)) unknown.push(w); }
+      return {known, unknown};
+    }
+    function fromWords(text){
+      const {known, unknown} = parse(text);
+      if(!known.length) return {error: unknown.length
+        ? `I don't know "${unknown.slice(0,2).join('", "')}" yet. Try one of the words below.`
+        : 'Write a word or two about yourself, or choose from the words below.'};
+      const use = known.slice(0,3);
+      const point = [0,1].map(i => use.reduce((s,w) => s+WORDS[w][i], 0)/use.length);
+      return {spec: compose(point, use), unknown};
+    }
+    // a colour (what you wear) placed on the map by its nearest colours in the study
+    function placeColour(rgb){
+      const lab = rgb2lab(rgb);
+      const near = ANCHORS.map(A => ({A, d:Math.hypot(lab[0]-A.lab[0], lab[1]-A.lab[1], lab[2]-A.lab[2])}))
+        .sort((x,y) => x.d-y.d).slice(0,2);
+      let W=0; const p=[0,0];
+      for(const {A,d} of near){ const w=1/(d*d+0.0008); W+=w; p[0]+=A.p[0]*w; p[1]+=A.p[1]*w; }
+      return [p[0]/W, p[1]/W];
+    }
+    function nearestWords(p, n=2){
+      return Object.entries(WORDS).map(([w,q]) => [w, dist(p,q)]).sort((x,y) => x[1]-y[1]).slice(0,n).map(x => x[0]);
+    }
+    function fromColours({wear, hair, light=0.5, contrast=0.2}){
+      let p = placeColour(wear);
+      // a busy, high-contrast frame lifts the arousal a little; a dim one lowers it
+      p = [p[0], Math.max(-1, Math.min(1, p[1] + (contrast-0.2)*0.8 + (light-0.5)*0.3))];
+      const words = nearestWords(p, 2);
+      return compose(p, words, {wearRGB: wear, source:'camera'});
+    }
+    function fromServer(traits, colors){
+      const words = traits.map(t => t.toLowerCase()).filter(t => WORDS[t]);
+      const use = words.length ? words : ['calm'];
+      const point = [0,1].map(i => use.reduce((s,w) => s+WORDS[w][i], 0)/use.length);
+      const wear = colors && colors[0] ? hex2rgb(colors[0]) : null;
+      return compose(point, use, {wearRGB: wear, source:'camera'});
+    }
+    return {fromWords, fromColours, fromServer, compose, ANCHORS, WORDS, SUGGEST, plural, rgb2hex, hex2rgb, rgb2lab};
+  })();
+  window.VESSEL_ENGINE = Engine;
+  </script>
+
+  <script>
+  (()=>{
+    const $ = id => document.getElementById(id);
+    const E = window.VESSEL_ENGINE;
+    const stage=$('stage'), cam=$('cam'), video=$('cam-video'), msg=$('msg');
+    let current=null, stream=null, swatchTimer=0, camMode='reading', busy=false;
+
+    // ── server (exhibition only); on GitHub Pages every call falls through ──
+    async function serverCall(path, body){
+      if(!SERVER) return null;
+      try{
+        const res = await fetch(`${SERVER}${path}`, {method:'POST', headers:API_HEADERS, body:JSON.stringify(body)});
+        if(!(res.headers.get('content-type')||'').includes('application/json')) return null;
+        const d = await res.json(); return d && d.ok ? d : null;
+      }catch(_){ return null; }
+    }
+    if(SERVER) $('cam-privacy').textContent = 'At the exhibition, Claude reads your expression and colours; the photo is not kept.';
+
+    // ── storage (light, per device, never required) ──
+    const store = {
+      get(k, d){ try{ const v=localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(_){ return d; } },
+      set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(_){} },
+    };
+
+    const say = (text, err=false) => { msg.textContent = text||''; msg.classList.toggle('err', !!err); };
+    const vessel = () => new Promise(res => { if(window.VESSEL && window.VESSEL.ready) res(window.VESSEL); else window.addEventListener('vessel-ready', () => res(window.VESSEL), {once:true}); });
+
+    // ── arrival ──
+    const landing=$('landing');
+    function enter(mode){
+      if(landing.classList.contains('hide')) return;
+      landing.classList.add('hide');
+      setTimeout(() => landing.remove(), 800);
+      if(mode==='camera') setMode('camera'); else setTimeout(() => $('traits').focus({preventScroll:true}), 650);
+    }
+    $('lo-words').addEventListener('click', () => enter('words'));
+    $('lo-camera').addEventListener('click', () => enter('camera'));
+    document.addEventListener('keydown', e => { if(e.key==='Escape' && document.body.contains(landing)) enter('words'); });
+    $('home-link').addEventListener('click', e => { e.preventDefault(); scrollTo({top:0, behavior:'smooth'}); });
+
+    // ── tabs ──
+    function setMode(mode){
+      const camOn = mode==='camera';
+      $('tab-words').setAttribute('aria-selected', !camOn);
+      $('tab-camera').setAttribute('aria-selected', camOn);
+      $('mode-words').hidden = camOn; $('mode-camera').hidden = !camOn;
+      say('');
+      if(camOn){ camMode='reading'; $('shutter').textContent='Take the reading'; $('cam-note').textContent='Stand inside the frame, about an arm’s length away.'; stage.classList.remove('portrait'); startCamera(); }
+      else stopCamera();
+    }
+    $('tab-words').addEventListener('click', () => setMode('words'));
+    $('tab-camera').addEventListener('click', () => setMode('camera'));
+    document.querySelector('.modes').addEventListener('keydown', e => {
+      if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ const toCam = $('tab-words').getAttribute('aria-selected')==='true'; setMode(toCam?'camera':'words'); $(toCam?'tab-camera':'tab-words').focus(); }
+    });
+
+    // ── words ──
+    const input=$('traits'), chips=$('chips');
+    E.SUGGEST.forEach(w => {
+      const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=w; b.setAttribute('aria-pressed','false');
+      b.addEventListener('click', () => {
+        const words = input.value.split(/[^A-Za-z]+/).filter(Boolean).map(s => s.toLowerCase());
+        const i = words.indexOf(w);
+        if(i>=0) words.splice(i,1); else { if(words.length>=3) words.shift(); words.push(w); }
+        input.value = words.join(', '); syncChips();
+      });
+      chips.appendChild(b);
+    });
+    function syncChips(){
+      const words = input.value.toLowerCase().split(/[^a-z]+/);
+      chips.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', words.includes(c.textContent)));
+    }
+    input.addEventListener('input', syncChips);
+    input.addEventListener('keydown', e => { if(e.key==='Enter') make(); });
+    $('make').addEventListener('click', make);
+
+    async function make(){
+      if(busy) return;
+      const r = E.fromWords(input.value);
+      if(r.error){ say(r.error, true); input.focus(); return; }
+      say(r.unknown && r.unknown.length ? `Left out "${r.unknown.join('", "')}": not on the map yet.` : '');
+      await present(r.spec);
+    }
+
+    // ── presenting a vessel ──
+    async function present(spec){
+      busy=true; $('make').disabled=true; $('shutter').disabled=true;
+      $('veil').classList.add('on');
+      const V = await vessel();
+      await new Promise(r => setTimeout(r, 380));
+      V.build(spec);
+      $('veil').classList.remove('on');
+      current = spec;
+      const n = store.get('vessel-count', 0) + 1; store.set('vessel-count', n);
+      spec.no = String(n).padStart(3,'0');
+      renderLabel(spec);
+      $('stage-title').textContent = `No. ${spec.no} · ${spec.formName}`;
+      setTimeout(() => addToArchive(spec, V), 900);
+      if(innerWidth <= 900) stage.scrollIntoView({behavior:'smooth', block:'start'});
+      busy=false; $('make').disabled=false; $('shutter').disabled=false;
+      if(!stream && camMode==='reading') $('shutter').textContent='Read again';
+    }
+
+    const and = arr => arr.length<2 ? arr.join('') : arr.slice(0,-1).join(', ')+' and '+arr[arr.length-1];
+    function renderLabel(s){
+      $('label').hidden=false;
+      $('l-no').textContent = s.no;
+      $('l-form').textContent = s.formName;
+      $('l-for').textContent = (s.source==='camera' ? 'read from the colours you wear: ' : 'for someone ') + and(s.words);
+      $('l-glaze').innerHTML = `<span class="swatch" style="background:${s.glazeHex}"></span>${cap(s.glazeName)}, ${s.finish.name} finish`;
+      $('l-clay').textContent = `${s.clay.name}, bare at the foot; ${s.surfaceText}`;
+      const sp = s.species.length>1 ? and(s.species.slice(0,2).map(E.plural)) : E.plural(s.species[0]);
+      $('l-flowers').innerHTML = `<span class="swatch" style="background:${s.flowerHex}"></span>${s.count} stems: ${sp}`;
+      $('l-key').textContent = `${s.harmony.rule}, ${s.harmony.mood}`;
+      document.documentElement.style.setProperty('--glaze', s.glazeHex);
+      drawMap(s);
+    }
+    const cap = t => t.charAt(0).toUpperCase()+t.slice(1);
+
+    // the colour-emotion map, redrawn with the visitor's point
+    function drawMap(s){
+      const R=100, svg=$('l-map');
+      const X = v => v*R, Y = a => -a*R;
+      let h = `<line x1="-${R}" y1="0" x2="${R}" y2="0" stroke="#1B1815" stroke-opacity=".25"/><line x1="0" y1="-${R}" x2="0" y2="${R}" stroke="#1B1815" stroke-opacity=".25"/>`;
+      h += `<text x="0" y="-${R+6}" text-anchor="middle" font-size="9" fill="#6A6158">Arousal</text><text x="0" y="${R+24}" text-anchor="middle" font-size="9" fill="#6A6158">Sleep</text>`;
+      h += `<text x="${R+4}" y="3" font-size="9" fill="#6A6158">Pleasure</text><text x="-${R+4}" y="3" text-anchor="end" font-size="9" fill="#6A6158">Displeasure</text>`;
+      for(const A of E.ANCHORS){
+        const near = s.near.includes(A.name);
+        h += `<rect x="${X(A.p[0])-6}" y="${Y(A.p[1])-6}" width="12" height="12" fill="${A.hex}" ${near?'stroke="#1B1815" stroke-width="1.5"':''}/>`;
+        h += `<text x="${X(A.p[0])}" y="${Y(A.p[1])+17}" text-anchor="middle" font-size="8" fill="${near?'#1B1815':'#6A6158'}">${A.name}</text>`;
+      }
+      const px=X(s.point[0]), py=Y(s.point[1]);
+      h += `<circle cx="${px}" cy="${py}" r="9" fill="${s.glazeHex}" stroke="#1B1815" stroke-width="1.5"/><circle cx="${px+13}" cy="${py-9}" r="5" fill="${s.flowerHex}" stroke="#1B1815"/>`;
+      h += `<text x="${px}" y="${py-14}" text-anchor="middle" font-size="9" font-style="italic" fill="#1B1815">you</text>`;
+      svg.innerHTML = h;
+      svg.setAttribute('font-family', 'EB Garamond, Georgia, serif');
+    }
+
+    // ── archive ──
+    function renderArchive(){
+      const list=$('archive-list'), items=store.get('vessel-archive', []);
+      list.innerHTML=''; $('archive-empty').hidden = items.length>0;
+      for(const it of items){
+        const li=document.createElement('li');
+        li.innerHTML = `<figure><img alt="${it.form} in ${it.glaze}" loading="lazy"><figcaption>No. ${it.no} · ${it.form}<span>${it.words}</span></figcaption></figure>`;
+        li.querySelector('img').src = it.img;
+        list.appendChild(li);
+      }
+    }
+    function addToArchive(s, V){
+      const img = V.snap({w:320, h:400, transparent:false, type:'image/jpeg'});
+      const items = store.get('vessel-archive', []);
+      items.unshift({no:s.no, form:s.formName, glaze:s.glazeName, words:s.words.join(', '), img});
+      while(items.length>12) items.pop();
+      store.set('vessel-archive', items);
+      if(store.get('vessel-archive', []).length===0){   // storage refused: keep it on the page only
+        const li=document.createElement('li'); li.innerHTML=`<figure><img alt=""><figcaption>No. ${s.no} · ${s.formName}<span>${s.words.join(', ')}</span></figcaption></figure>`;
+        li.querySelector('img').src=img; $('archive-list').prepend(li); $('archive-empty').hidden=true; return;
+      }
+      renderArchive();
+    }
+    renderArchive();
+
+    // ── camera ──
+    async function startCamera(){
+      const status=$('cam-status'); $('cam-retry').hidden=true; $('shutter').disabled=true;
+      stage.classList.add('camera'); cam.classList.remove('frozen','reading');
+      if(stream){ $('shutter').disabled=busy; return; }
+      if(!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        status.textContent = 'This page cannot open a camera here. Open it over https, or use Words instead.'; $('cam-retry').hidden=false; return;
+      }
+      status.textContent = 'Asking for the camera…';
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:1280}, height:{ideal:960}}, audio:false});
+        video.srcObject = stream;
+        await new Promise(r => { if(video.readyState>=2) r(); else video.onloadeddata = r; });
+        try{ await video.play(); }catch(_){}
+        status.textContent = camMode==='portrait'
+          ? 'Stand on the left; your vessel waits on the right. Three seconds after you press, the photo is taken.'
+          : 'Stand inside the frame. The colour of what you wear is read inside the dashed box.';
+        $('shutter').disabled = busy;
+        if(camMode==='reading') $('shutter').textContent='Take the reading';
+        clearInterval(swatchTimer); swatchTimer = setInterval(showSwatches, 450);
+      }catch(err){
+        stream=null;
+        const name = err && err.name;
+        status.textContent =
+          name==='NotAllowedError' ? (window.self!==window.top
+              ? 'The camera is blocked inside this frame. Open VESSEL full screen, or allow the camera in your browser.'
+              : 'Camera permission was refused. Allow it from the camera icon in the address bar, then try again.') :
+          name==='NotFoundError' || name==='OverconstrainedError' ? 'No camera was found on this device. Use Words instead.' :
+          name==='NotReadableError' ? 'Another app is using the camera. Close it and try again.' :
+          'The camera did not start. Try again, or use Words.';
+        $('cam-retry').hidden=false;
+      }
+    }
+    function stopCamera(){
+      clearInterval(swatchTimer);
+      if(stream){ stream.getTracks().forEach(t => t.stop()); stream=null; }
+      video.srcObject=null; stage.classList.remove('camera','portrait'); cam.classList.remove('frozen','reading');
+      $('cam-swatches').innerHTML='';
+    }
+    $('cam-retry').addEventListener('click', startCamera);
+
+    // reading the frame: the dominant colour in the clothing zone, the hair above it
+    const probe=document.createElement('canvas'); probe.width=96; probe.height=96;
+    const pctx=probe.getContext('2d', {willReadFrequently:true});
+    function grabRegion(x0,y0,x1,y1){
+      const vw=video.videoWidth, vh=video.videoHeight; if(!vw) return null;
+      // the video is shown with object-fit: cover; map the visible box back to the source
+      const sw=stage.clientWidth, sh=stage.clientHeight, sc=Math.max(sw/vw, sh/vh);
+      const ox=(vw*sc-sw)/2, oy=(vh*sc-sh)/2;
+      const fx=x=>((sw-(x*sw))+ox)/sc;                    // mirrored on screen
+      const fy=y=>((y*sh)+oy)/sc;
+      const sx=Math.min(fx(x0),fx(x1)), sy=fy(y0), w=Math.abs(fx(x1)-fx(x0)), h=fy(y1)-fy(y0);
+      pctx.drawImage(video, sx, sy, w, h, 0, 0, 96, 96);
+      return pctx.getImageData(0,0,96,96).data;
+    }
+    function dominant(px){
+      const bins=Array.from({length:24}, () => ({w:0,r:0,g:0,b:0}));
+      let lr=0,lg=0,lb=0,n=0, sumL=0, sumL2=0;
+      for(let i=0;i<px.length;i+=4){
+        const r=px[i]/255, g=px[i+1]/255, b=px[i+2]/255, mx=Math.max(r,g,b), mn=Math.min(r,g,b), s=mx?(mx-mn)/mx:0;
+        const L=(r+g+b)/3; sumL+=L; sumL2+=L*L; lr+=r; lg+=g; lb+=b; n++;
+        if(s<0.16 || mx<0.12) continue;
+        let h=0; const d=mx-mn; h = mx===r ? ((g-b)/d)%6 : mx===g ? (b-r)/d+2 : (r-g)/d+4; h=(h/6+1)%1;
+        const B=bins[Math.floor(h*24)%24], w=s*mx; B.w+=w; B.r+=r*w; B.g+=g*w; B.b+=b*w;
+      }
+      const mean=sumL/n, contrast=Math.sqrt(Math.max(0, sumL2/n-mean*mean));
+      const total=bins.reduce((s,b)=>s+b.w,0), top=bins.reduce((a,b)=>b.w>a.w?b:a);
+      const rgb = total > n*0.04 ? [top.r/top.w, top.g/top.w, top.b/top.w] : [lr/n, lg/n, lb/n];   // mostly grey: use the mean
+      return {rgb, light:mean, contrast};
+    }
+    function readFrame(){
+      const body=grabRegion(0.36,0.62,0.64,0.88), hair=grabRegion(0.42,0.18,0.58,0.30);
+      if(!body) return null;
+      const d=dominant(body), hh=dominant(hair);
+      return {wear:d.rgb, hair:hh.rgb, light:d.light, contrast:d.contrast};
+    }
+    function showSwatches(){
+      if(!stream || camMode!=='reading') { $('cam-swatches').innerHTML=''; return; }
+      const r=readFrame(); if(!r) return;
+      $('cam-swatches').innerHTML = `<b style="background:${E.rgb2hex(r.wear)}" title="what you wear"></b><b style="background:${E.rgb2hex(r.hair)}" title="hair"></b>`;
+    }
+
+    async function countdown(){
+      const c=$('cam-count');
+      for(const t of ['3','2','1']){ c.textContent=t; await new Promise(r => setTimeout(r, 750)); }
+      c.textContent='';
+    }
+    function frameToDataURL(w, h){
+      const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const x=cv.getContext('2d');
+      const vw=video.videoWidth, vh=video.videoHeight, sc=Math.max(w/vw, h/vh);
+      x.translate(w,0); x.scale(-1,1);
+      x.drawImage(video, (w-vw*sc)/2, (h-vh*sc)/2, vw*sc, vh*sc);
+      return cv;
+    }
+
+    $('shutter').addEventListener('click', async () => {
+      if(busy) return;
+      if(!stream){ startCamera(); return; }
+      $('shutter').disabled=true;
+      await countdown();
+      if(camMode==='portrait') return takePortrait();
+      const snap=frameToDataURL(960, 720);
+      $('cam-freeze').src = snap.toDataURL('image/jpeg', .85);
+      cam.classList.add('frozen','reading');
+      $('cam-note').textContent='Reading your colours…';
+      const r = readFrame();
+      let spec=null;
+      const srv = await serverCall('/scan', {image: snap.toDataURL('image/jpeg', .8)});
+      if(srv && srv.traits) spec = E.fromServer(srv.traits, srv.colors);
+      await new Promise(res => setTimeout(res, 1300));
+      if(!spec) spec = E.fromColours(r);
+      cam.classList.remove('reading');
+      $('cam-note').textContent='Stand inside the frame, about an arm’s length away.';
+      stopCamera();
+      $('cam-status').textContent='Done. Put on something else and read again, or switch to Words.';
+      await present(spec);
+      // keep the tab on Camera so the visitor can read again
+      $('tab-camera').setAttribute('aria-selected', true);
+    });
+
+    // ── portrait with the vessel ──
+    $('portrait').addEventListener('click', async () => {
+      if(!current) return;
+      const V = await vessel();
+      $('cam-pot').src = V.snap({w:700, h:875, transparent:true});
+      setMode('camera');
+      camMode='portrait'; stage.classList.add('portrait');
+      $('shutter').textContent='Take the portrait';
+      $('cam-note').textContent='Stand on the left. Your vessel waits on the right.';
+      $('cam-status').textContent='Starting the camera…';
+      if(stream) $('cam-status').textContent='Stand on the left; your vessel waits on the right.';
+      stage.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+    async function takePortrait(){
+      const cv=frameToDataURL(1600, 1200), x=cv.getContext('2d');
+      x.setTransform(1,0,0,1,0,0);
+      const pot=$('cam-pot'); const pw=Math.min(cv.width*0.42, 640), ph=pw*1.25;
+      x.drawImage(pot, cv.width-pw-cv.width*0.04, cv.height-ph, pw, ph);
+      // the label, like a museum caption
+      x.fillStyle='rgba(247,244,239,.94)'; x.fillRect(48, cv.height-170, 620, 122);
+      x.fillStyle='#1B1815'; x.font='400 46px "Bodoni Moda", Didot, serif'; x.fillText(`${current.formName}`, 76, cv.height-104);
+      x.font='italic 26px "EB Garamond", Georgia, serif'; x.fillText(`No. ${current.no} · ${current.words.join(', ')} · ${current.glazeName}`, 78, cv.height-66);
+      const url=cv.toDataURL('image/jpeg', .92);
+      $('portrait-img').src=url;
+      $('portrait-download').onclick = () => download(url, `vessel-${current.no}-portrait.jpg`);
+      const qr=$('pb-qr'); qr.innerHTML=''; qr.hidden=true; $('pb-qr-note').hidden=true;
+      const srv = await serverCall('/photobooth', {composite:url});
+      if(srv && srv.render_url && window.QRCode){ new QRCode(qr, {text:srv.render_url, width:150, height:150}); qr.hidden=false; $('pb-qr-note').hidden=false; }
+      $('portrait-dialog').showModal();
+      $('shutter').disabled=false;
+    }
+    $('portrait-close').addEventListener('click', () => $('portrait-dialog').close());
+    $('portrait-retake').addEventListener('click', () => $('portrait-dialog').close());
+    $('portrait-dialog').addEventListener('close', () => { if(camMode==='portrait' && stream) $('shutter').disabled=false; });
+
+    function download(url, name){ const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+    $('save').addEventListener('click', async () => {
+      if(!current) return;
+      const V=await vessel(), img=new Image();
+      img.onload = () => {
+        const cv=document.createElement('canvas'); cv.width=1200; cv.height=1600; const x=cv.getContext('2d');
+        x.fillStyle='#E9E4DB'; x.fillRect(0,0,1200,1600); x.drawImage(img, 0, 0, 1200, 1350);
+        x.fillStyle='#1B1815'; x.font='400 64px "Bodoni Moda", Didot, serif'; x.fillText(current.formName, 80, 1450);
+        x.font='italic 32px "EB Garamond", Georgia, serif'; x.fillText(`No. ${current.no} · ${current.words.join(', ')} · ${current.glazeName}, ${current.finish.name}`, 82, 1505);
+        x.font='26px "EB Garamond", Georgia, serif'; x.fillStyle='#6A6158'; x.fillText('VESSEL · Yenlik Abdissattar', 82, 1550);
+        download(cv.toDataURL('image/png'), `vessel-${current.no}.png`);
+      };
+      img.src = V.snap({w:1200, h:1350, transparent:false});
+    });
+  })();
+  </script>
+
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-    import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 
     const container = document.getElementById('main-3d');
-    const renderer  = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    const renderer  = new THREE.WebGLRenderer({ antialias:true, alpha:true, preserveDrawingBuffer:true });
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    renderer.setPixelRatio(DPR);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
-    renderer.outputColorSpace   = THREE.SRGBColorSpace;
-    renderer.toneMapping        = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.38;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.95;
     container.appendChild(renderer.domElement);
 
-    const scene  = new THREE.Scene();
-    function bgFromPot(rgb){
-      return new THREE.Color(
-        Math.min(rgb[0]*0.36+0.64,1.0),
-        Math.min(rgb[1]*0.36+0.64,1.0),
-        Math.min(rgb[2]*0.36+0.64,1.0)
-      );
-    }
-    scene.background = bgFromPot([0.08,0.04,0.18]);
+    // a gallery: warm grey wall, a stone plinth, one soft key light
+    const BONE = new THREE.Color('#E9E4DB');
+    const scene = new THREE.Scene();
+    scene.background = BONE.clone();
+    scene.fog = new THREE.Fog(BONE, 9, 22);
 
-    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
-    camera.position.set(0, 4.2, 2.8);
-    camera.lookAt(0, 1.0, 0);
-
+    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
+    camera.position.set(0, 2.2, 6.2);
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 1.0, 0);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.6;
-    controls.minDistance = 1.5;
-    controls.maxDistance = 10;
-    renderer.domElement.addEventListener('pointerdown', () => controls.autoRotate = false);
-    renderer.domElement.addEventListener('pointerup',   () => controls.autoRotate = true);
+    controls.target.set(0, 0.8, 0);
+    controls.enableDamping = true; controls.dampingFactor = 0.07;
+    controls.enablePan = false;
+    controls.autoRotate = true; controls.autoRotateSpeed = 0.7;
+    controls.minDistance = 2.4; controls.maxDistance = 10;
+    controls.minPolarAngle = 0.3; controls.maxPolarAngle = 1.5;
+    let resumeTimer = 0;
+    controls.addEventListener('start', () => { controls.autoRotate = false; clearTimeout(resumeTimer); });
+    controls.addEventListener('end', () => { resumeTimer = setTimeout(() => controls.autoRotate = true, 3000); });
 
-    // PMREM environment — soft ambient reflections, much closer to Blender Cycles look
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     pmrem.dispose();
 
-    // RectAreaLight matches Blender's area-light shading model
-    RectAreaLightUniformsLib.init();
-    scene.add(new THREE.AmbientLight(0xffffff, 0.04));
+    const key = new THREE.DirectionalLight(0xfff0dc, 2.1);
+    key.position.set(3.2, 6.5, 4.2); key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 7; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+    Object.assign(key.shadow.camera, {left:-2.4, right:2.4, top:3, bottom:-2, near:1, far:16});
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xdfe6ff, 0.45); fill.position.set(-4.5, 2.4, 3.2); scene.add(fill);
+    const rim  = new THREE.DirectionalLight(0xffffff, 0.9);  rim.position.set(-1.5, 4.5, -5); scene.add(rim);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xd9d0c2, 0.6));
 
-    // Shadow-only directional — low intensity, just casts the contact shadow
-    const shadowCaster = new THREE.DirectionalLight(0xffffff, 0.25);
-    shadowCaster.position.set(4,7,3); shadowCaster.castShadow=true;
-    shadowCaster.shadow.mapSize.set(2048,2048); shadowCaster.shadow.bias=-0.0004; shadowCaster.shadow.radius=5;
-    scene.add(shadowCaster);
+    const stone = new THREE.MeshStandardMaterial({ color:'#DDD6CB', roughness:0.95 });
+    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.98, 0.98, 0.7, 128), stone);
+    plinth.position.y = -0.35; plinth.receiveShadow = true; scene.add(plinth);
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(40, 64), new THREE.MeshStandardMaterial({ color:'#E1DBD1', roughness:1 }));
+    floor.rotation.x = -Math.PI/2; floor.position.y = -0.7; floor.receiveShadow = true; scene.add(floor);
 
-    const keyL  = new THREE.RectAreaLight(0xffe8c0, 14, 4, 4);
-    keyL.position.set(4,5,3); keyL.lookAt(0,0.5,0); scene.add(keyL);
-    const fillL = new THREE.RectAreaLight(0xb8c8ff, 4.5, 5, 5);
-    fillL.position.set(-4,2,4); fillL.lookAt(0,0.5,0); scene.add(fillL);
-    const topL  = new THREE.RectAreaLight(0xffffff, 5.5, 5, 5);
-    topL.position.set(0,7,0); topL.lookAt(0,0,0); scene.add(topL);
-    const rimL  = new THREE.RectAreaLight(0xffeedd, 2.5, 2, 5);
-    rimL.position.set(-1,4,-5); rimL.lookAt(0,0.5,0); scene.add(rimL);
-
-    const groundMat = new THREE.MeshStandardMaterial({color:0xe0dbd5,roughness:0.90,envMapIntensity:0.4});
-    const ground = new THREE.Mesh(new THREE.CircleGeometry(7,64), groundMat);
-    ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
-
-    const PROFILES = {
-      uniformCylinder:[[0,0],[0.58,0],[0.62,0.07],[0.56,0.78],[0.52,0.90],[0.58,0.97],[0.54,1.05]],
-      narrowCylinder: [[0,0],[0.42,0],[0.44,0.07],[0.38,0.82],[0.35,0.94],[0.40,1.00],[0.37,1.14]],
-      bulbous:        [[0,0],[0.78,0],[0.82,0.07],[0.70,0.40],[0.65,0.52],[0.70,0.57],[0.66,0.62]],
-      amphora:        [[0,0],[0.48,0],[0.52,0.06],[0.76,0.22],[0.84,0.44],[0.80,0.62],[0.52,0.80],[0.34,0.90],[0.38,0.96],[0.36,1.02]],
-      pinnedNeck:     [[0,0],[0.38,0],[0.40,0.06],[0.34,0.92],[0.32,1.08],[0.36,1.14]],
-      flaringRim:     [[0,0],[0.70,0],[0.74,0.06],[0.62,0.14],[0.36,0.36],[0.28,0.52],[0.36,0.68],[0.62,0.84],[0.68,0.94],[0.64,1.00]],
+    // ── forms: control points (radius, height) through a smooth spline ──
+    // round and soft reads friendly; tall and thin, anxious; a wide mouth, dominant;
+    // a wide base, grounded (the character psychology study, applied to pots)
+    const FORMS = {
+      ovoid:     [[0.30,0],[0.42,0.05],[0.60,0.30],[0.63,0.55],[0.50,0.82],[0.36,0.95],[0.37,1.00]],
+      moonJar:   [[0.30,0],[0.44,0.05],[0.68,0.24],[0.75,0.47],[0.68,0.72],[0.45,0.90],[0.34,0.96],[0.35,1.00]],
+      balloon:   [[0.24,0],[0.38,0.06],[0.66,0.26],[0.72,0.46],[0.58,0.70],[0.30,0.88],[0.22,0.98],[0.27,1.08]],
+      tallBottle:[[0.27,0],[0.33,0.05],[0.41,0.28],[0.43,0.60],[0.35,0.90],[0.20,1.12],[0.17,1.28],[0.23,1.36]],
+      flared:    [[0.25,0],[0.31,0.05],[0.32,0.18],[0.38,0.48],[0.56,0.80],[0.76,1.00],[0.81,1.05]],
+      cylinder:  [[0.44,0],[0.50,0.03],[0.52,0.12],[0.51,0.62],[0.50,0.94],[0.53,1.02]],
+      lowJar:    [[0.46,0],[0.60,0.04],[0.78,0.18],[0.79,0.34],[0.66,0.52],[0.55,0.60],[0.57,0.64]],
     };
+    const WALL = 0.045;
+
+    const srgb = rgb => new THREE.Color().setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);   // engine colours are sRGB
+    function rng(seed){ let s = Math.floor(seed*2**31) || 7; return () => { s = (s*16807) % 2147483647; return (s-1)/2147483646; }; }
+    const smooth = (a,b,x) => { const t = Math.min(1, Math.max(0, (x-a)/(b-a))); return t*t*(3-2*t); };
+
+    // the wall as one closed path: foot ring → outer wall → rounded lip → inner wall → floor
+    function wallPath(form){
+      const outer = new THREE.SplineCurve(FORMS[form].map(([r,y]) => new THREE.Vector2(r,y))).getSpacedPoints(72);
+      const H = outer[outer.length-1].y, r0 = outer[0].x;
+      const P = [];
+      P.push({r:0.001, y:0.018, part:'foot'}, {r:r0-0.08, y:0.018, part:'foot'}, {r:r0-0.06, y:0.0, part:'foot'}, {r:r0-0.02, y:0.0, part:'foot'});
+      outer.forEach(p => P.push({r:p.x, y:p.y, part:'outer'}));
+      // outward normals of the outer curve
+      const N = outer.map((p,i) => { const a=outer[Math.max(0,i-1)], b=outer[Math.min(outer.length-1,i+1)];
+        const dx=b.x-a.x, dy=b.y-a.y, l=Math.hypot(dx,dy)||1; return [dy/l, -dx/l]; });
+      // lip: half a circle from the outer edge to the inner edge
+      const top = outer[outer.length-1], nT = N[N.length-1];
+      const cx = top.x - nT[0]*WALL/2, cy = top.y - nT[1]*WALL/2;
+      const a0 = Math.atan2(nT[1], nT[0]);
+      for(let k=1;k<10;k++){ const a = a0 + Math.PI*k/10; P.push({r:cx+Math.cos(a)*WALL/2, y:cy+Math.sin(a)*WALL/2, part:'lip'}); }
+      const floorY = 0.10;
+      for(let i=outer.length-1;i>=0;i--){
+        const q = {r: outer[i].x - N[i][0]*WALL, y: outer[i].y - N[i][1]*WALL, part:'inner'};
+        if(q.y < floorY) break;
+        P.push(q);
+      }
+      P.push({r:Math.max(0.02, P[P.length-1].r*0.9), y:floorY, part:'inner'}, {r:0.001, y:floorY, part:'inner'});
+      return {P, H, outer};
+    }
+    function radiusAt(outer, y){
+      for(let i=1;i<outer.length;i++) if(outer[i].y >= y){ const a=outer[i-1], b=outer[i], t=(y-a.y)/((b.y-a.y)||1); return a.x+(b.x-a.x)*t; }
+      return outer[outer.length-1].x;
+    }
+
+    function buildBody(spec){
+      const R = rng(spec.seed);
+      const {P, H, outer} = wallPath(spec.form);
+      const S = 180;                                     // segments around
+      const flutes = spec.surface==='flutes', wobble = spec.surface==='wobble';
+      const ph = [R()*6.28, R()*6.28, R()*6.28, R()*6.28];
+      const drips = Array.from({length:6}, () => ({a:R()*Math.PI*2, w:0.08+R()*0.1, l:0.03+R()*0.08}));
+      const glaze = srgb(spec.glazeRGB), clay = srgb(spec.clay.rgb);
+      const pos=[], col=[], isClay=[];
+      const tmp = new THREE.Color();
+      for(let k=0;k<P.length;k++){
+        const {r, y, part} = P[k];
+        const band = smooth(0.14*H, 0.26*H, y) * (1 - smooth(0.80*H, 0.92*H, y));
+        for(let j=0;j<S;j++){
+          const t = j/S*Math.PI*2;
+          let m = 1, groove = 0;
+          if(flutes && part!=='foot'){ groove = Math.pow(Math.max(0, Math.cos(22*t)), 8) * band; if(part==='outer') m -= 0.03*groove; }
+          if(wobble) m += band*0.055*(0.6*Math.sin(2*t+ph[0]+1.7*y) + 0.4*Math.sin(3*t+ph[1]-2.3*y) + 0.25*Math.sin(5*t+ph[2]+4*y));
+          let rr = r*m;
+          if(part==='outer') rr += 0.0011*Math.sin(y*96 + ph[3]) * band;     // throwing lines
+          pos.push(Math.cos(t)*rr, y, Math.sin(t)*rr);
+          // where the glaze stops: a wavy dip line with a few runs
+          let dip = H*(0.13 + 0.018*Math.sin(2*t+ph[0]));
+          for(const d of drips){ let da = Math.abs(t-d.a); da = Math.min(da, Math.PI*2-da); dip -= d.l*Math.exp(-((da/d.w)**2)); }
+          const bare = part==='foot' || (part==='outer' && y < dip);
+          isClay.push(bare ? 1 : 0);
+          if(bare){
+            const sp = (R()-0.5)*0.06 + (R()<0.03 ? -0.12 : 0);        // speckled stoneware
+            tmp.copy(clay).offsetHSL(0, 0, sp);
+          }else{
+            tmp.copy(glaze);
+            const edge = part==='outer' ? smooth(dip+0.03, dip, y) : 0;      // glaze pools thicker at its edge
+            tmp.offsetHSL(0, 0.02*edge, -0.10*edge - 0.12*groove);          // and in the grooves
+            if(part==='lip') tmp.lerp(clay, 0.28);                          // and breaks thin over the rim
+            if(R()<0.012) tmp.offsetHSL(0, 0, -0.08);                       // iron spots
+          }
+          col.push(tmp.r, tmp.g, tmp.b);
+        }
+      }
+      const glazeIdx=[], clayIdx=[];
+      for(let k=0;k<P.length-1;k++) for(let j=0;j<S;j++){
+        const a=k*S+j, b=k*S+(j+1)%S, c=(k+1)*S+j, d=(k+1)*S+(j+1)%S;
+        const bare = (isClay[a]+isClay[b]+isClay[c]+isClay[d]) >= 2;
+        (bare ? clayIdx : glazeIdx).push(a,c,b, b,c,d);
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+      geo.setAttribute('color', new THREE.Float32BufferAttribute(col,3));
+      geo.setIndex([...glazeIdx, ...clayIdx]);
+      geo.addGroup(0, glazeIdx.length, 0); geo.addGroup(glazeIdx.length, clayIdx.length, 1);
+      geo.computeVertexNormals();
+      const glazeMat = new THREE.MeshPhysicalMaterial({ vertexColors:true, roughness:spec.finish.rough, clearcoat:spec.finish.clearcoat,
+        clearcoatRoughness:0.1, envMapIntensity:1.1, side:THREE.DoubleSide });
+      const clayMat = new THREE.MeshStandardMaterial({ vertexColors:true, roughness:0.9, envMapIntensity:0.6, side:THREE.DoubleSide });
+      const body = new THREE.Mesh(geo, [glazeMat, clayMat]);
+      body.castShadow = body.receiveShadow = true;
+      return {body, H, outer, glazeMat};
+    }
+
+
+    // ── surface extras ──
+    function addExtras(group, spec, H, outer, glazeMat){
+      const solid = new THREE.MeshPhysicalMaterial({ color:srgb(spec.glazeRGB), roughness:spec.finish.rough, clearcoat:spec.finish.clearcoat, clearcoatRoughness:0.1 });
+      if(spec.surface==='dots'){
+        const y = H*0.58, r = radiusAt(outer, y);
+        const dotMat = new THREE.MeshPhysicalMaterial({ color:srgb(spec.flowerRGB), roughness:0.2, clearcoat:0.8 });
+        for(let i=0;i<14;i++){ const a=i/14*Math.PI*2;
+          const d = new THREE.Mesh(new THREE.SphereGeometry(0.034, 16, 12), dotMat);
+          d.scale.set(1,1,0.6); d.position.set(Math.cos(a)*(r+0.012), y, Math.sin(a)*(r+0.012)); d.lookAt(0, y, 0); d.castShadow=true; group.add(d); }
+        for(let i=0;i<14;i++){ const a=(i+0.5)/14*Math.PI*2, yy=H*0.46, rr=radiusAt(outer,yy);
+          const d = new THREE.Mesh(new THREE.SphereGeometry(0.022, 12, 10), dotMat);
+          d.scale.set(1,1,0.6); d.position.set(Math.cos(a)*(rr+0.008), yy, Math.sin(a)*(rr+0.008)); d.lookAt(0, yy, 0); d.castShadow=true; group.add(d); }
+      }
+      if(spec.surface==='handles'){
+        const y = H*0.72, r = radiusAt(outer, y);
+        for(const s of [1,-1]){
+          const h = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.024, 16, 40, Math.PI*1.15), solid);
+          h.rotation.z = s>0 ? -Math.PI/2 - 0.25 : Math.PI/2 + 0.25;
+          h.position.set(s*(r-0.01), y, 0); h.castShadow = true; group.add(h);
+        }
+      }
+    }
+
+    // ── flowers (species builders kept from the first version) ──
 
     function mesh(geo,mat,pos=[0,0,0],scale=[1,1,1]){
       const m=new THREE.Mesh(geo,mat);
@@ -1780,893 +1402,116 @@
       return g;
     }
 
-    function buildPot(params){
-      const{colorRGB=[0.55,0.48,0.38],flowerColorRGB=[0.88,0.72,0.35],
-            silhouette='amphora',roughness=0.30,
-            flowerTypes=['daisy','rose','tulip'],flowerCount=7}=params||{};
-      const profile=PROFILES[silhouette]||PROFILES.amphora;
-      const pts=profile.map(([r,y])=>new THREE.Vector2(r,y));
-      const rimH=Math.max(...profile.map(p=>p[1]));
-      const rimR=profile.reduce((b,p)=>p[1]>=b[1]?p:b,profile[0])[0];
-      const potColor=new THREE.Color(colorRGB[0],colorRGB[1],colorRGB[2]);
-      const accent=potColor.clone();
-      accent.r=Math.min(accent.r+0.18,1);accent.g=Math.min(accent.g+0.15,1);accent.b=Math.min(accent.b+0.10,1);
-      const potMat=new THREE.MeshStandardMaterial({color:potColor,roughness,metalness:0.04,envMapIntensity:2.2});
-      const accMat=new THREE.MeshStandardMaterial({color:accent,roughness:Math.max(roughness-0.12,0.04),envMapIntensity:2.0});
-      const soilMat=new THREE.MeshStandardMaterial({color:0x1e0f06,roughness:0.96,envMapIntensity:0.3});
-      const stemMat=new THREE.MeshStandardMaterial({color:0x2d5a1b,roughness:0.82,envMapIntensity:0.8});
-      const fc=flowerColorRGB;
-      const pMat=new THREE.MeshStandardMaterial({color:new THREE.Color(fc[0],fc[1],fc[2]),roughness:roughness*0.55,side:THREE.DoubleSide,envMapIntensity:1.8});
-      const cMat=new THREE.MeshStandardMaterial({color:new THREE.Color(fc[0]*0.45+0.15,fc[1]*0.28+0.10,fc[2]*0.08+0.03),roughness:0.65,side:THREE.DoubleSide,envMapIntensity:1.4});
-      const group=new THREE.Group();
-      const potGeo=new THREE.LatheGeometry(pts,128);
-      potGeo.computeVertexNormals();
-      const potM=new THREE.Mesh(potGeo,potMat);
-      potM.castShadow=potM.receiveShadow=true;group.add(potM);
-      const rim=new THREE.Mesh(new THREE.TorusGeometry(rimR,0.038,14,80),accMat);
-      rim.position.y=rimH;rim.castShadow=true;group.add(rim);
-      const midH=profile[Math.floor(profile.length*0.4)][1];
-      const midR2=profile.reduce((b,p)=>Math.abs(p[1]-midH)<Math.abs(b[1]-midH)?p:b,profile[0])[0];
-      for(let i=0;i<16;i++){const a=i/16*Math.PI*2;
-        const d=new THREE.Mesh(new THREE.SphereGeometry(0.032,7,5),accMat);
-        d.position.set(Math.cos(a)*(midR2+0.035),midH,Math.sin(a)*(midR2+0.035));
-        d.castShadow=true;group.add(d);}
-      const soil=new THREE.Mesh(new THREE.CylinderGeometry(rimR*0.90,rimR*0.90,0.055,40),soilMat);
-      soil.position.y=rimH-0.18;soil.receiveShadow=true;group.add(soil);
-      const packR=rimR*0.72;
-      for(let i=0;i<flowerCount;i++){
-        const a=i/flowerCount*Math.PI*2+0.4;
-        const sp=packR*(0.12+0.72*((i*7+3)%5)/4);
-        const px=Math.cos(a)*sp,pz=Math.sin(a)*sp;
-        const h=0.32+0.32*((i*3+1)%4)/3+0.10*(i%2);
-        const type=flowerTypes[i%flowerTypes.length];
-        const baseY=rimH-0.16;
-        const stM=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.020,h,6),stemMat);
-        stM.position.set(px,baseY+h/2,pz);stM.castShadow=true;group.add(stM);
-        const sang=Math.atan2(pz,px);
-        [[0.38,1],[0.62,-1]].forEach(([f,s])=>{
-          addLeaf(group,px,pz,baseY+h*f,sang+Math.PI/2*s);
-        });
-        // Vary petal colour per stem for richness
-        const hueShift=(i/flowerCount*0.30-0.15);
-        const varPMat=hueShift===0?pMat:shiftMat(pMat,hueShift);
-        const fl=createFlower(type,varPMat,cMat);
-        fl.position.set(px,baseY+h,pz);fl.castShadow=true;group.add(fl);
+
+
+    function buildPlant(group, spec, H, outer){
+      const R = rng(spec.seed + 0.37);
+      const rimR = outer[outer.length-1].x - WALL;
+      const soilY = H - Math.min(0.12, H*0.1);
+      const soilR = Math.max(0.05, radiusAt(outer, soilY) - WALL*1.2);
+      const soil = new THREE.Mesh(new THREE.CylinderGeometry(soilR, soilR*0.96, 0.03, 48),
+        new THREE.MeshStandardMaterial({ color:0x2a1a10, roughness:1 }));
+      soil.position.y = soilY; soil.receiveShadow = true; group.add(soil);
+
+      const pMat = new THREE.MeshStandardMaterial({ color:srgb(spec.flowerRGB), roughness:0.5, side:THREE.DoubleSide, envMapIntensity:1.2 });
+      const cMat = new THREE.MeshStandardMaterial({ color:srgb(spec.centreRGB), roughness:0.7, side:THREE.DoubleSide });
+      const stemMat = new THREE.MeshStandardMaterial({ color:0x3d6b2a, roughness:0.8 });
+      const n = spec.count, spread = Math.min(rimR, soilR) * 0.78;
+      const narrow = rimR < 0.3;                      // a bottle neck: fewer, taller, splayed stems
+      for(let i=0;i<n;i++){
+        const t = i*2.39996 + spec.seed*6.28, rad = spread*Math.sqrt((i+0.5)/n);
+        const bx = Math.cos(t)*rad, bz = Math.sin(t)*rad;
+        const h = (narrow ? 0.55 : 0.36) + R()*0.34 + (i===0 ? 0.08 : 0);
+        const lean = (narrow ? 0.55 : 0.35) + R()*0.25;
+        const tip = new THREE.Vector3(bx*(1+lean*2.2) + (R()-0.5)*0.06, soilY + h, bz*(1+lean*2.2) + (R()-0.5)*0.06);
+        const mid = new THREE.Vector3(bx*1.2, soilY + h*0.55, bz*1.2);
+        const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(bx, soilY, bz), mid, tip);
+        const stem = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.011, 6, false), stemMat);
+        stem.castShadow = true; group.add(stem);
+        const ang = Math.atan2(bz, bx);
+        [[0.35,1],[0.6,-1]].forEach(([f,s]) => { const p = curve.getPoint(f); addLeaf(group, p.x, p.z, p.y, ang + s*Math.PI/2); });
+        const type = spec.species[i % spec.species.length];
+        const fl = createFlower(type, i%3===1 ? shiftMat(pMat, 0.07) : i%3===2 ? shiftMat(pMat, -0.06) : pMat, cMat);
+        const dir = curve.getTangent(1).normalize();
+        fl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.lerp(new THREE.Vector3(0,1,0), 0.45).normalize());
+        fl.position.copy(tip); fl.scale.setScalar(0.9 + R()*0.25); group.add(fl);
       }
-      return group;
     }
 
-    let currentPot=null;
-    let _lastPotRGB=[0.08,0.04,0.18];
-    function applyBg(rgb){
-      const bg=bgFromPot(rgb);
-      scene.background=bg;
-      groundMat.color.set(new THREE.Color(bg.r*0.80,bg.g*0.80,bg.b*0.80));
+    // ── build, drop, frame ──
+    let current = null, drop = null;
+    const frameGoal = { y:0.8, dist:6.2 };
+    function build(spec){
+      if(current){ scene.remove(current); current.traverse(o => { if(o.geometry) o.geometry.dispose(); }); }
+      _leafMeshes = [];
+      const g = new THREE.Group();
+      const {body, H, outer, glazeMat} = buildBody(spec);
+      g.add(body); addExtras(g, spec, H, outer, glazeMat); buildPlant(g, spec, H, outer);
+      current = g; scene.add(g);
+      const box = new THREE.Box3().setFromObject(g), size = box.getSize(new THREE.Vector3());
+      frameGoal.y = box.min.y + size.y*0.48;
+      frameGoal.dist = Math.max(4.0, (size.y*0.5)/Math.tan(camera.fov*Math.PI/360) * 1.55);
+      drop = { t0: performance.now() };            // the pot drops onto the plinth
+      g.position.y = 1.4;
+      controls.autoRotate = true;
     }
-    function spawnPot(params){
-      if(currentPot)scene.remove(currentPot);
-      _leafMeshes=[];
-      currentPot=buildPot(params);
-      scene.add(currentPot);
-      controls.autoRotate=true;
-      const rgb=(params||{}).colorRGB||[0.55,0.48,0.38];
-      _lastPotRGB=rgb;
-      if(!window.VESSEL||!window.VESSEL._pb) applyBg(rgb);
-    }
+    function easeOutBounce(x){ const n=7.5625, d=2.75;
+      if(x<1/d) return n*x*x; if(x<2/d) return n*(x-=1.5/d)*x+0.75; if(x<2.5/d) return n*(x-=2.25/d)*x+0.9375; return n*(x-=2.625/d)*x+0.984375; }
 
-    spawnPot({
-      colorRGB:[0.08,0.04,0.18],flowerColorRGB:[0.62,0.16,0.94],
-      silhouette:'pinnedNeck',roughness:0.70,
-      flowerTypes:['cosmos','daisy','rose'],flowerCount:7,
-    });
-
-    window.VESSEL=window.VESSEL||{};
-    window.VESSEL.updatePot=(p)=>spawnPot(p);
-    window.VESSEL.renderer=renderer;
-    window.VESSEL.controls=controls;
-    window.VESSEL.camera=camera;
-    window.VESSEL.scene=scene;
-    window.VESSEL.ground=ground;
-    window.VESSEL.resizeToContainer=(el)=>{
-      const w=el.clientWidth,h=el.clientHeight;
-      if(!w||!h)return;
-      renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
-    };
-    window.VESSEL.renderHighRes=(w,h)=>{
-      // Render at composite resolution — caller draws THEN calls resizeToContainer
-      renderer.setSize(w,h,false);
-      camera.aspect=w/h; camera.updateProjectionMatrix();
-      renderer.render(scene,camera);
-      // deliberately no restore here — restoring before drawImage was clearing the buffer
-    };
-
-    window.VESSEL.setPbCamera=(on)=>{
-      if(on){
-        scene.background=null;  // transparent so camera shows through
-        groundMat.color.set(0x111111);
-        camera.fov=55; camera.updateProjectionMatrix();
-        camera.position.set(0,3.6,2.6);
-        controls.target.set(0,1.0,0);
-        controls.minDistance=0.5;
-        controls.autoRotate=true;
-        controls.autoRotateSpeed=1.8;
-      } else {
-        applyBg(_lastPotRGB);   // restore pastel background
-        camera.fov=55; camera.updateProjectionMatrix();
-        camera.position.set(0,4.2,2.8);
-        controls.target.set(0,1.0,0);
-        controls.minDistance=1.5;
-        controls.autoRotateSpeed=0.6;
-      }
-      controls.update();
-    };
-
-    let _pbT=0, _introT=0;
-
-    window.VESSEL.snapRender=(w=1024,h=1024)=>{
-      const savedPos=camera.position.clone();
-      const savedTarget=controls.target.clone();
-      const savedAspect=camera.aspect;
-      camera.position.set(0,4.2,2.8);
-      controls.target.set(0,1.0,0);
-      camera.lookAt(0,1.0,0);
-      camera.aspect=w/h; camera.updateProjectionMatrix();
-      renderer.setSize(w,h,false);
-      renderer.render(scene,camera);
-      const url=renderer.domElement.toDataURL('image/png');
-      camera.position.copy(savedPos);
-      controls.target.copy(savedTarget);
-      camera.aspect=savedAspect; camera.updateProjectionMatrix();
-      window.VESSEL.resizeToContainer(document.getElementById('main-3d'));
+    // a still of the vessel, framed the same way every time
+    function snap({w=800, h=1000, transparent=false, type='image/png', dist:fixDist=0, cy:fixCy=null}={}){
+      const pc = camera.position.clone(), pt = controls.target.clone(), pa = camera.aspect;
+      const size = renderer.getSize(new THREE.Vector2());
+      const box = new THREE.Box3().setFromObject(current), s = box.getSize(new THREE.Vector3());
+      const tf = Math.tan(camera.fov*Math.PI/360), cy = fixCy ?? box.min.y + s.y*0.5;
+      const dist = fixDist || Math.max((s.y*0.5)/tf, (Math.max(s.x, s.z)*0.5)/(tf*(w/h))) * 1.3;   // fit height and width
+      camera.position.set(0, cy + dist*0.22, dist); camera.lookAt(0, cy, 0);
+      camera.aspect = w/h; camera.updateProjectionMatrix();
+      const bg = scene.background, fog = scene.fog;
+      if(transparent){ scene.background = null; scene.fog = null; plinth.visible = floor.visible = false; }
+      const y0 = current.position.y; current.position.y = 0;
+      renderer.setPixelRatio(1); renderer.setSize(w, h, false);
+      renderer.render(scene, camera);
+      const url = renderer.domElement.toDataURL(type, 0.9);
+      current.position.y = y0;
+      scene.background = bg; scene.fog = fog; plinth.visible = floor.visible = true;
+      renderer.setPixelRatio(DPR); renderer.setSize(size.x, size.y, false);
+      camera.position.copy(pc); controls.target.copy(pt); camera.aspect = pa; camera.updateProjectionMatrix();
+      renderer.render(scene, camera);
       return url;
-    };
-
-    window.VESSEL.startPbIntro=()=>{
-      _introT=0;
-      window.VESSEL._intro=true;
-      if(currentPot){
-        currentPot.position.y=-3.5;
-        currentPot.scale.setScalar(0.04);
-      }
-    };
+    }
 
     function resize(){
-      const parent=renderer.domElement.parentElement||container;
-      const w=parent.clientWidth,h=parent.clientHeight;
-      if(!w||!h)return;
-      renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
+      const w = container.clientWidth, h = container.clientHeight; if(!w || !h) return;
+      renderer.setSize(w, h, false); camera.aspect = w/h;
+      camera.fov = w/h < 0.8 ? 38 : 30;            // tall phone screens need a wider lens
+      camera.updateProjectionMatrix();
     }
-    resize();
-    window.addEventListener('resize',resize);
-    (function loop(){
-      requestAnimationFrame(loop);
+    new ResizeObserver(resize).observe(container); resize();
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime();
+      if(drop && current){
+        const x = Math.min(1, (performance.now()-drop.t0)/900);
+        current.position.y = 1.4*(1-easeOutBounce(x));
+        if(x>=1) drop = null;
+      }
+      // ease the camera toward the new pot's framing
+      controls.target.y += (frameGoal.y - controls.target.y)*0.06;
+      const off = camera.position.clone().sub(controls.target), d = off.length();
+      if(Math.abs(d - frameGoal.dist) > 0.01 && !controls._userZoom) camera.position.copy(controls.target).add(off.multiplyScalar(1 + (frameGoal.dist/d - 1)*0.05));
+      _leafMeshes.forEach(l => { l.mesh.rotation.z = l.bz + Math.sin(t*1.1 + l.ph)*0.04; });
       controls.update();
-      if(window.VESSEL._pb&&currentPot){
-        if(window.VESSEL._intro){
-          // Entrance: rise from below with cubic ease-out
-          _introT=Math.min(_introT+0.024,1.0);
-          const e=1-Math.pow(1-_introT,3);
-          currentPot.position.y=-3.5*(1-e);
-          currentPot.scale.setScalar(0.04+0.96*e);
-          if(_introT>=1.0){
-            window.VESSEL._intro=false;
-            currentPot.position.y=0;
-            currentPot.scale.setScalar(1);
-          }
-        } else {
-          // Idle float after entrance
-          _pbT+=0.014;
-          currentPot.position.y=Math.sin(_pbT)*0.10+Math.sin(_pbT*0.63)*0.05;
-        }
-      } else if(currentPot){
-        // Drift back to rest when leaving photobooth
-        if(Math.abs(currentPot.position.y)>0.001) currentPot.position.y*=0.88;
-        const s=currentPot.scale.x;
-        if(Math.abs(s-1)>0.001) currentPot.scale.setScalar(s+(1-s)*0.14);
-      }
-      // Animate leaves — gentle organic sway
-      const lt=performance.now()*0.00055;
-      _leafMeshes.forEach(l=>{
-        l.mesh.rotation.x=l.bx+Math.sin(lt*1.15+l.ph)*0.09;
-        l.mesh.rotation.z=l.bz+Math.sin(lt*0.82+l.ph+1.4)*0.06;
-      });
-      renderer.render(scene,camera);
-    })();
+      renderer.render(scene, camera);
+    });
+    renderer.domElement.addEventListener('wheel', () => { controls._userZoom = true; }, {passive:true});
+    renderer.domElement.addEventListener('touchstart', e => { if(e.touches.length>1) controls._userZoom = true; }, {passive:true});
+
+    // a first vessel, so the stage is never empty
+    build(window.VESSEL_ENGINE.compose([0.40,-0.40], ['serene','nostalgic']));
+    window.VESSEL = { build: s => { controls._userZoom = false; build(s); }, snap, ready:true, renderer, camera, controls, scene, get group(){ return current; } };
+    window.dispatchEvent(new Event('vessel-ready'));
   </script>
-
-  <!-- ══════════════════════════════════════════════════════════════
-       PAGE LOGIC
-  ══════════════════════════════════════════════════════════════ -->
-  <script>
-    // ── Config — change SERVER to local IP for exhibition ────────────────────
-    const SERVER = '';
-    const API_HEADERS = {'Content-Type':'application/json'};
-
-    // ── Local engine ─────────────────────────────────────────────────────────
-    // GitHub Pages has no server, so every fetch to /generate, /scan, /analyse
-    // and /photobooth came back as a 404 HTML page and res.json() threw
-    // "Unexpected token '<'". The rules below are the same as api.py; the app
-    // uses them whenever no server answers with JSON. With SERVER set to the
-    // exhibition machine, the server (and Claude vision) is used as before.
-    const VESSEL_LOCAL=(()=>{
-      const DB={
-    "anxious":     ["hourglass",   [0.84, 0.18, 0.12], [0.28, 0.72, 0.42], 0.80, 8],
-    "serene":      ["wide_squat",  [0.10, 0.38, 0.78], [0.92, 0.94, 0.98], 0.72, 8],
-    "chaotic":     ["irregular",   [0.96, 0.22, 0.04], [0.98, 0.94, 0.06], 0.85, 10],
-    "nostalgic":   ["urn",         [0.72, 0.30, 0.12], [0.96, 0.84, 0.52], 0.82, 7],
-    "melancholic": ["pedestal",    [0.18, 0.14, 0.48], [0.72, 0.62, 0.92], 0.75, 6],
-    "playful":     ["balloon",     [0.98, 0.68, 0.06], [0.94, 0.22, 0.58], 0.78, 10],
-    "mysterious":  ["pedestal",    [0.08, 0.04, 0.18], [0.62, 0.16, 0.94], 0.70, 6],
-    "ethereal":    ["tall_slim",   [0.78, 0.86, 0.98], [0.94, 0.96, 1.00], 0.55, 8],
-    "grumpy":      ["wide_squat",  [0.22, 0.28, 0.14], [0.58, 0.72, 0.32], 0.88, 6],
-    "jealous":     ["hourglass",   [0.06, 0.52, 0.24], [0.94, 0.92, 0.08], 0.80, 7],
-    "curious":     ["balloon",     [0.94, 0.62, 0.08], [0.18, 0.52, 0.94], 0.76, 9],
-    "confident":   ["cylindrical", [0.06, 0.08, 0.72], [0.98, 0.78, 0.06], 0.72, 8],
-    "gentle":      ["wide_squat",  [0.96, 0.72, 0.78], [0.98, 0.94, 0.84], 0.68, 8],
-    "intense":     ["hourglass",   [0.76, 0.04, 0.04], [0.98, 0.92, 0.88], 0.78, 7],
-    "warm":        ["urn",         [0.94, 0.42, 0.08], [0.98, 0.86, 0.22], 0.80, 8],
-    "cold":        ["pedestal",    [0.22, 0.48, 0.82], [0.86, 0.94, 0.98], 0.70, 6],
-    "sad":         ["narrow",      [0.38, 0.44, 0.62], [0.78, 0.82, 0.94], 0.78, 6],
-    "happy":       ["balloon",     [0.98, 0.88, 0.06], [0.96, 0.42, 0.18], 0.76, 10],
-    "angry":       ["hourglass",   [0.88, 0.04, 0.04], [0.98, 0.88, 0.06], 0.84, 8],
-    "bubbly":      ["balloon",     [0.96, 0.58, 0.82], [0.98, 0.94, 0.42], 0.78, 10],
-    "dreamy":      ["urn",         [0.72, 0.58, 0.94], [0.94, 0.88, 0.98], 0.65, 9],
-    "wild":        ["irregular",   [0.28, 0.72, 0.08], [0.96, 0.78, 0.06], 0.86, 10],
-    "elegant":     ["pedestal",    [0.08, 0.08, 0.08], [0.94, 0.90, 0.82], 0.60, 7],
-    "dark":        ["pedestal",    [0.06, 0.04, 0.10], [0.52, 0.12, 0.86], 0.65, 6],
-    "bright":      ["balloon",     [0.98, 0.96, 0.08], [0.96, 0.38, 0.06], 0.80, 10],
-    "nervous":     ["hourglass",   [0.62, 0.48, 0.36], [0.42, 0.74, 0.52], 0.82, 7],
-    "peaceful":    ["wide_squat",  [0.42, 0.74, 0.58], [0.94, 0.98, 0.92], 0.70, 8],
-    "romantic":    ["urn",         [0.92, 0.28, 0.48], [0.98, 0.88, 0.92], 0.72, 9],
-    "bold":        ["hourglass",   [0.06, 0.06, 0.62], [0.96, 0.82, 0.06], 0.78, 8],
-    "tender":      ["wide_squat",  [0.96, 0.78, 0.84], [0.98, 0.94, 0.92], 0.68, 8],
-    "frantic":     ["irregular",   [0.92, 0.26, 0.04], [0.96, 0.82, 0.06], 0.88, 10],
-    "stoic":       ["cylindrical", [0.28, 0.28, 0.30], [0.68, 0.72, 0.66], 0.82, 6],
-    "whimsical":   ["balloon",     [0.82, 0.48, 0.96], [0.98, 0.92, 0.42], 0.76, 10],
-};
-      const DEFAULT=["urn",[0.68,0.28,0.12],[0.94,0.82,0.42],0.78,8];
-      const SPECIES={
-    "anxious":     ["cosmos",    "tulip",    "lavender",      "poppy"],
-    "serene":      ["daisy",     "lotus",    "lily",          "orchid"],
-    "chaotic":     ["sunflower", "carnation","iris",          "chrysanthemum"],
-    "nostalgic":   ["daisy",     "rose",     "lavender",      "peony"],
-    "melancholic": ["cosmos",    "orchid",   "iris",          "lavender"],
-    "playful":     ["daffodil",  "peony",    "wildflower",    "cosmos"],
-    "mysterious":  ["cosmos",    "orchid",   "iris",          "lotus"],
-    "ethereal":    ["daisy",     "lily",     "lavender",      "orchid"],
-    "grumpy":      ["wildflower","carnation","iris",          "chrysanthemum"],
-    "jealous":     ["cosmos",    "tulip",    "iris",          "poppy"],
-    "curious":     ["sunflower", "peony",    "orchid",        "daffodil"],
-    "confident":   ["sunflower", "tulip",    "iris",          "lily"],
-    "gentle":      ["daisy",     "peony",    "lavender",      "rose"],
-    "intense":     ["sunflower", "rose",     "iris",          "poppy"],
-    "warm":        ["sunflower", "carnation","daffodil",      "rose"],
-    "cold":        ["cosmos",    "tulip",    "iris",          "lotus"],
-    "sad":         ["wildflower","orchid",   "lavender",      "tulip"],
-    "happy":       ["daisy",     "daffodil", "sunflower",     "peony"],
-    "angry":       ["wildflower","rose",     "iris",          "poppy"],
-    "bubbly":      ["daffodil",  "peony",    "cosmos",        "daisy"],
-    "dreamy":      ["cosmos",    "peony",    "lavender",      "lotus"],
-    "wild":        ["sunflower", "chrysanthemum","wildflower","poppy"],
-    "elegant":     ["cosmos",    "orchid",   "lily",          "carnation"],
-    "dark":        ["wildflower","orchid",   "iris",          "lotus"],
-    "bright":      ["sunflower", "daffodil", "cosmos",        "daisy"],
-    "nervous":     ["cosmos",    "tulip",    "lavender",      "wildflower"],
-    "peaceful":    ["daisy",     "lotus",    "lavender",      "lily"],
-    "romantic":    ["daisy",     "peony",    "rose",          "carnation"],
-    "bold":        ["sunflower", "iris",     "lily",          "chrysanthemum"],
-    "tender":      ["daisy",     "carnation","lavender",      "rose"],
-    "frantic":     ["sunflower", "chrysanthemum","wildflower","cosmos"],
-    "stoic":       ["cosmos",    "lotus",    "iris",          "lily"],
-    "whimsical":   ["daffodil",  "peony",    "cosmos",        "wildflower"],
-};
-      const SHAPE={
-    "cylindrical": "uniformCylinder",
-    "tall_slim":   "narrowCylinder",
-    "wide_squat":  "bulbous",
-    "tapered":     "amphora",
-    "balloon":     "bulbous",
-    "narrow":      "pinnedNeck",
-    "irregular":   "flaringRim",
-    "hourglass":   "flaringRim",
-    "pedestal":    "pinnedNeck",
-    "urn":         "amphora",
-};
-      const ALL=new Set(["sunflower","rose","daisy","wildflower","tulip","poppy","grass","orchid","peony","iris","lily","lavender","lotus","chrysanthemum","carnation","daffodil","cosmos"]);
-      function resolve(traits){
-        const n=traits.map(t=>t.toLowerCase().trim());
-        let [shape,pot,flower,rough,count]=DEFAULT;
-        for(const t of n){ if(DB[t]){[shape,pot,flower,rough,count]=DB[t];break;} }
-        for(const t of n.slice(1)){ if(DB[t]){const [,p2,f2]=DB[t];pot=pot.map((a,i)=>(a+p2[i])/2);flower=flower.map((a,i)=>(a+f2[i])/2);break;} }
-        let species=[];
-        for(const t of n){ if(SPECIES[t]){species=SPECIES[t].slice();break;} }
-        if(!species.length) species=["daisy","wildflower","tulip"];
-        for(const t of n.slice(1)){ if(SPECIES[t]){SPECIES[t].forEach(s=>{if(!species.includes(s))species.push(s);});break;} }
-        return {shape,pot,flower,rough,count,species};
-      }
-      function params(r){
-        let ft=r.species.filter(s=>ALL.has(s)); if(!ft.length) ft=["daisy"];
-        return {colorRGB:r.pot,flowerColorRGB:r.flower,silhouette:SHAPE[r.shape]||"amphora",roughness:r.rough,flowerTypes:ft.slice(0,4),flowerCount:r.count};
-      }
-      function rgb2hsv(r,g,b){const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;
-        if(d){h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h/=6;if(h<0)h+=1;}
-        return [h,mx?d/mx:0,mx];}
-      function hsv2rgb(h,s,v){const i=Math.floor(h*6),f=h*6-i,p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
-        return [[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]][((i%6)+6)%6];}
-      function complementary(c,off=0.5){let [h,s,v]=rgb2hsv(...c);h=(h+off)%1;
-        s=Math.max(0.55,Math.min(1,s*1.15));v=Math.max(0.55,Math.min(1,v*1.10));return hsv2rgb(h,s,v);}
-      const dist=(a,b)=>a.reduce((m,x,i)=>m+Math.abs(x-b[i]),0);
-      function blend(cols,pot,flower){
-        if(!cols.length) return [pot,flower];
-        pot=cols[0];
-        flower=cols.length>=2&&dist(cols[1],pot)>=0.35?cols[1]:complementary(pot);
-        if(dist(flower,pot)<0.35) flower=complementary(pot,0.33);
-        return [pot,flower];
-      }
-      // Without Claude vision: read the frame's own colours. Top = hair,
-      // centre-low = clothing; the clothing colour and the frame's light
-      // choose the two traits, from the same vocabulary the server uses.
-      function avg(px,W,x0,y0,x1,y1){let r=0,g=0,b=0,n=0;
-        for(let y=Math.floor(y0*W);y<Math.floor(y1*W);y++)for(let x=Math.floor(x0*W);x<Math.floor(x1*W);x++){const o=(y*W+x)*4;r+=px[o];g+=px[o+1];b+=px[o+2];n++;}
-        return [r/n/255,g/n/255,b/n/255];}
-      function read(dataURL){
-        return new Promise((ok,fail)=>{
-          const img=new Image();
-          img.onload=()=>{
-            const W=48,c=document.createElement('canvas');c.width=c.height=W;
-            const x=c.getContext('2d');x.drawImage(img,0,0,W,W);
-            const px=x.getImageData(0,0,W,W).data;
-            const top=avg(px,W,.35,.04,.65,.22), cloth=avg(px,W,.30,.62,.70,.95),
-                  side=avg(px,W,.08,.60,.28,.95), all=avg(px,W,0,0,1,1);
-            const [h,s,v]=rgb2hsv(...cloth);
-            let lum=0,lum2=0;for(let i=0;i<px.length;i+=4){const l=(px[i]+px[i+1]+px[i+2])/765;lum+=l;lum2+=l*l;}
-            const N=px.length/4,mean=lum/N,contrast=Math.sqrt(Math.max(0,lum2/N-mean*mean));
-            const seed=Math.round((cloth[0]*7+cloth[1]*13+cloth[2]*17+top[0]*5)*1000);
-            const pick=a=>a[seed%a.length];
-            let t1;
-            if(v<0.22) t1=pick(["elegant","mysterious","dark"]);
-            else if(s<0.16) t1=v>0.7?pick(["serene","ethereal"]):pick(["stoic","cold"]);
-            else if(h<0.05||h>0.94) t1=pick(["intense","bold","romantic"]);
-            else if(h<0.17) t1=pick(["warm","happy","playful"]);
-            else if(h<0.45) t1=pick(["peaceful","curious","wild"]);
-            else if(h<0.70) t1=pick(["cold","serene","confident"]);
-            else t1=pick(["dreamy","mysterious","whimsical"]);
-            let t2=contrast>0.24?pick(["bold","chaotic","intense"]):mean>0.6?pick(["bubbly","gentle","tender"]):mean<0.35?pick(["melancholic","nostalgic","stoic"]):pick(["gentle","curious","nostalgic"]);
-            if(t2===t1) t2="nostalgic";
-            const hex=c=>'#'+c.map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('');
-            ok({traits:[t1,t2],colors:[cloth,top,side,all].map(hex),rgb:[cloth,top]});
-          };
-          img.onerror=()=>fail(new Error('Could not read the photo'));
-          img.src=dataURL;
-        });
-      }
-      async function handle(path,body){
-        if(path==='/generate'){
-          const traits=String(body.traits||'').split(/[,\s]+/).filter(Boolean);
-          if(!traits.length) return {ok:false,error:'No traits provided'};
-          return {ok:true,traits,pot_params:params(resolve(traits))};
-        }
-        if(path==='/scan'||path==='/analyse'){
-          const r=await read(body.image), res=resolve(r.traits);
-          [res.pot,res.flower]=blend(r.rgb,res.pot,res.flower);
-          return {ok:true,traits:r.traits,colors:r.colors,pot_params:params(res)};
-        }
-        return {ok:false,local:true};
-      }
-      return {handle};
-    })();
-
-    // Ask the server; if there is none (or it answers with a page, not JSON), work locally.
-    async function vesselApi(path,body){
-      try{
-        const res=await fetch(`${SERVER}${path}`,{method:'POST',headers:API_HEADERS,body:JSON.stringify(body)});
-        if((res.headers.get('content-type')||'').includes('application/json')){
-          const d=await res.json();
-          if(d.ok||res.status<500) return d;
-        }
-      }catch(_){}
-      return VESSEL_LOCAL.handle(path,body);
-    }
-
-    // ── State ────────────────────────────────────────────────────────────────
-    let lastRenderFilename = null;
-    let lastRenderUrl      = null;
-    let capturedDataURL    = null;
-    let pbStream           = null;
-    let leftStream         = null;
-    let leftSwatchTimer    = null;
-
-    // ── Three.js snapshot ────────────────────────────────────────────────────
-    function captureVesselRender(){
-      return new Promise(resolve=>{
-        let f=0;
-        function tick(){
-          if(f++<4){requestAnimationFrame(tick);return;}
-          resolve(window.VESSEL&&window.VESSEL.snapRender?window.VESSEL.snapRender():null);
-        }
-        requestAnimationFrame(tick);
-      });
-    }
-
-    // ── Loading ──────────────────────────────────────────────────────────────
-    const PHASES = ['Reading traits','Shaping clay','Growing stems','Opening petals','Almost there'];
-    let phaseTimer=null, phaseIdx=0;
-
-    function startLoading(){
-      const plant=document.querySelector('.vl-plant');
-      const old=plant.querySelector('svg');
-      plant.replaceChild(old.cloneNode(true),old);
-      phaseIdx=0;
-      const ph=document.getElementById('loading-phase');
-      ph.style.opacity='1'; ph.textContent=PHASES[0];
-      document.getElementById('gen-loading').classList.add('active');
-      phaseTimer=setInterval(()=>{
-        phaseIdx=(phaseIdx+1)%PHASES.length;
-        ph.style.opacity='0';
-        setTimeout(()=>{ph.textContent=PHASES[phaseIdx];ph.style.opacity='1';},380);
-      },3500);
-    }
-
-    function stopLoading(){
-      document.getElementById('gen-loading').classList.remove('active');
-      clearInterval(phaseTimer);phaseTimer=null;
-    }
-
-    function showError(msg){
-      stopLoading();
-      const el=document.getElementById('gen-error');
-      el.textContent=msg.includes('Failed to fetch')?
-        'Cannot reach API — make sure api.py is running': msg;
-      el.style.display='block';
-      document.getElementById('gen-status').textContent='';
-    }
-
-    async function showResult(data){
-      stopLoading();
-      if(window.VESSEL&&data.pot_params) window.VESSEL.updatePot(data.pot_params);
-      const traits=(data.traits||[]).join(' · ');
-      const renderDataURL=await captureVesselRender();
-      lastRenderUrl=renderDataURL||'';
-      lastRenderFilename=`vessel_${Date.now()}.png`;
-      document.getElementById('strip-img').src=lastRenderUrl;
-      document.getElementById('strip-traits').textContent=traits;
-      document.getElementById('render-strip').classList.add('visible');
-      document.getElementById('photobooth-btn').style.display='';
-      addToRecents(lastRenderUrl,traits);
-      document.getElementById('gen-status').textContent='';
-      document.getElementById('gen-error').style.display='none';
-    }
-
-    function addToRecents(url, label){
-      const scroll=document.getElementById('recents-scroll');
-      const cell=document.createElement('div');
-      cell.className='recent-cell';
-      const img=document.createElement('img');
-      img.src=url; img.alt=label;
-      const cap=document.createElement('div');
-      cap.className='recent-cell-label'; cap.textContent=label||'—';
-      cell.appendChild(img); cell.appendChild(cap);
-      scroll.insertBefore(cell, scroll.firstChild);
-      // Scroll to show the new cell
-      scroll.scrollTo({left:0,behavior:'smooth'});
-    }
-
-    // ── Mode tabs ────────────────────────────────────────────────────────────
-    document.querySelectorAll('.mode-tab').forEach(tab=>{
-      tab.addEventListener('click',()=>{
-        document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
-        document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById('panel-'+tab.dataset.panel).classList.add('active');
-        const hero=document.querySelector('.hero');
-        if(tab.dataset.panel==='scan') hero.classList.add('scan-mode');
-        else hero.classList.remove('scan-mode');
-      });
-    });
-
-    document.getElementById('scan-back-btn').addEventListener('click',()=>{
-      document.querySelector('.hero').classList.remove('scan-mode');
-      document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
-      document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
-      document.querySelector('[data-panel="type"]').classList.add('active');
-      document.getElementById('panel-type').classList.add('active');
-    });
-
-    // ── Text generate ────────────────────────────────────────────────────────
-    const genBtn=document.getElementById('gen-btn');
-    const mainInput=document.getElementById('main-input');
-
-    async function generateFromText(){
-      const raw=mainInput.value.trim();
-      const label=document.getElementById('main-label').value.trim();
-      if(!raw) return;
-      genBtn.disabled=true;
-      document.getElementById('gen-error').style.display='none';
-      document.getElementById('gen-status').textContent='shaping…';
-      document.getElementById('render-strip').classList.remove('visible');
-      startLoading();
-      try{
-        const data=await vesselApi('/generate',{traits:raw,label});
-        if(!data.ok) throw new Error(data.error||'Generation failed');
-        showResult(data);
-      }catch(e){showError(e.message);}
-      finally{genBtn.disabled=false;}
-    }
-
-    genBtn.addEventListener('click',generateFromText);
-    mainInput.addEventListener('keydown',e=>{if(e.key==='Enter')generateFromText();});
-
-    // ── Scan (left panel camera) ─────────────────────────────────────────────
-    function sampleColors(vid,n=5){
-      const c=document.createElement('canvas');c.width=24;c.height=24;
-      const x=c.getContext('2d');
-      x.drawImage(vid,vid.videoWidth*0.20,vid.videoHeight*0.45,
-                  vid.videoWidth*0.60,vid.videoHeight*0.55,0,0,24,24);
-      const px=x.getImageData(0,0,24,24).data;
-      const step=Math.floor(576/n),cols=[];
-      for(let i=0;i<n;i++){const o=i*step*4;cols.push([px[o],px[o+1],px[o+2]]);}
-      return cols;
-    }
-
-    document.getElementById('left-cam-start').addEventListener('click',async()=>{
-      try{
-        leftStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
-        document.getElementById('left-video').srcObject=leftStream;
-        document.getElementById('left-cam-start').style.display='none';
-        const sb=document.getElementById('snap-btn');
-        sb.style.display='inline-block';sb.disabled=false;
-        document.getElementById('left-swatches').style.display='flex';
-        leftSwatchTimer=setInterval(()=>{
-          const vid=document.getElementById('left-video');
-          if(vid.readyState>=2){
-            sampleColors(vid).forEach((rgb,i)=>{
-              const el=document.getElementById('lsw'+i);
-              if(el)el.style.background=`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
-            });
-          }
-        },500);
-      }catch(e){showError('Camera access denied.');}
-    });
-
-    document.getElementById('snap-btn').addEventListener('click',async()=>{
-      if(!leftStream)return;
-      clearInterval(leftSwatchTimer);
-      const sb=document.getElementById('snap-btn');
-      sb.disabled=true;
-      document.getElementById('gen-error').style.display='none';
-      document.getElementById('render-strip').classList.remove('visible');
-      document.getElementById('result-reveal-btn').classList.remove('visible');
-      const vid=document.getElementById('left-video');
-      const canvas=document.getElementById('left-canvas');
-      canvas.width=vid.videoWidth;canvas.height=vid.videoHeight;
-      const ctx=canvas.getContext('2d');
-      ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(vid,0,0);
-      capturedDataURL=canvas.toDataURL('image/jpeg',0.85);
-      // Camera stays live — no freeze
-      startLoading();
-      const label=document.getElementById('scan-label').value.trim();
-      try{
-        const data=await vesselApi('/scan',{image:capturedDataURL,label});
-        if(!data.ok)throw new Error(data.error||'Scan failed');
-        stopLoading();
-        if(window.VESSEL&&data.pot_params) window.VESSEL.updatePot(data.pot_params);
-        const traits=(data.traits||[]).join(' · ');
-        const renderDataURL=await captureVesselRender();
-        lastRenderUrl=renderDataURL||'';
-        lastRenderFilename=`vessel_scan_${Date.now()}.png`;
-        document.getElementById('strip-img').src=lastRenderUrl;
-        document.getElementById('strip-traits').textContent=traits;
-        document.getElementById('photobooth-btn').style.display='';
-        addToRecents(lastRenderUrl,traits);
-        document.getElementById('result-reveal-btn').classList.add('visible');
-      }catch(e){
-        stopLoading();
-        showError(e.message);
-      }finally{sb.disabled=false;}
-    });
-
-    document.getElementById('result-reveal-btn').addEventListener('click',()=>{
-      document.getElementById('render-strip').classList.add('visible');
-      document.getElementById('result-reveal-btn').classList.remove('visible');
-    });
-
-    // ── Photobooth ───────────────────────────────────────────────────────────
-    async function pbAutoAnalyse(vid){
-      await new Promise(r=>setTimeout(r,1400));
-      if(!vid.srcObject||vid.videoWidth<10) return;
-      const c=document.createElement('canvas');
-      c.width=Math.min(640,vid.videoWidth); c.height=Math.min(360,vid.videoHeight);
-      const cx=c.getContext('2d');
-      cx.translate(c.width,0); cx.scale(-1,1);
-      cx.drawImage(vid,0,0,c.width,c.height);
-      const imgData=c.toDataURL('image/jpeg',0.72);
-      try{
-        const d=await vesselApi('/analyse',{image:imgData});
-        if(d.ok&&d.pot_params&&window.VESSEL) window.VESSEL.updatePot(d.pot_params);
-      }catch(_){}
-    }
-
-    const pbModal=document.getElementById('pb-modal');
-
-    document.getElementById('photobooth-btn').addEventListener('click',async()=>{
-      if(!lastRenderUrl) return;
-      pbModal.classList.add('open');
-      showPbPhase('aim');
-      if(window.VESSEL){
-        const ov=document.getElementById('pb-vessel-overlay');
-        ov.appendChild(window.VESSEL.renderer.domElement);
-
-        // Drag handle on top of canvas so user can reposition vessel
-        let _handle=document.getElementById('pb-vessel-handle');
-        if(!_handle){
-          _handle=document.createElement('div');
-          _handle.id='pb-vessel-handle';
-          _handle.className='pb-vessel-handle';
-          const hint=document.createElement('span');
-          hint.className='pb-vessel-hint';
-          hint.textContent='drag · pinch to resize';
-          _handle.appendChild(hint);
-          ov.appendChild(_handle);
-        }
-
-        // Reset overlay transform
-        let _ovX=0,_ovY=0,_ovS=1;
-        ov.style.transform='';
-        ov.style.transformOrigin='bottom right';
-        function _setOvT(){ov.style.transform=`translate(${_ovX}px,${_ovY}px) scale(${_ovS})`;}
-
-        // Drag
-        let _dStart=null;
-        _handle.onpointerdown=e=>{
-          e.preventDefault();
-          _dStart={x:e.clientX-_ovX,y:e.clientY-_ovY};
-          _handle.setPointerCapture(e.pointerId);
-          _handle.classList.add('dragging');
-        };
-        _handle.onpointermove=e=>{
-          if(!_dStart)return;
-          _ovX=e.clientX-_dStart.x; _ovY=e.clientY-_dStart.y; _setOvT();
-        };
-        _handle.onpointerup=()=>{_dStart=null;_handle.classList.remove('dragging');};
-
-        // Scroll to scale
-        _handle.addEventListener('wheel',e=>{
-          e.preventDefault();
-          _ovS=Math.max(0.35,Math.min(3.0,_ovS-e.deltaY*0.0012));
-          _setOvT();
-        },{passive:false});
-
-        // Pinch to scale
-        let _pinch0=null;
-        _handle.addEventListener('touchstart',e=>{
-          if(e.touches.length===2){
-            _pinch0={dist:Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
-                                     e.touches[0].clientY-e.touches[1].clientY),s:_ovS};
-            e.preventDefault();
-          }
-        },{passive:false});
-        _handle.addEventListener('touchmove',e=>{
-          if(e.touches.length===2&&_pinch0){
-            const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
-                               e.touches[0].clientY-e.touches[1].clientY);
-            _ovS=Math.max(0.35,Math.min(3.0,_pinch0.s*(d/_pinch0.dist)));
-            _setOvT(); e.preventDefault();
-          }
-        },{passive:false});
-        _handle.addEventListener('touchend',()=>{_pinch0=null;});
-
-        // +/- buttons
-        document.getElementById('pb-size-up').onclick=()=>{_ovS=Math.min(3.0,_ovS+0.12);_setOvT();};
-        document.getElementById('pb-size-dn').onclick=()=>{_ovS=Math.max(0.35,_ovS-0.12);_setOvT();};
-
-        if(window.VESSEL.ground) window.VESSEL.ground.visible=false;
-        window.VESSEL._pb=true;
-        window.VESSEL.setPbCamera(true);
-        setTimeout(()=>{
-          window.VESSEL.resizeToContainer(ov);
-          window.VESSEL.startPbIntro();
-        },80);
-      }
-      try{
-        pbStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
-        const vid=document.getElementById('pb-video');
-        vid.srcObject=pbStream;
-        pbAutoAnalyse(vid);
-      }catch(e){
-        alert('Camera access needed for photobooth.');
-        closePb();
-      }
-    });
-
-    document.getElementById('pb-close').addEventListener('click',closePb);
-
-    function closePb(){
-      pbModal.classList.remove('open');
-      if(pbStream){pbStream.getTracks().forEach(t=>t.stop());pbStream=null;}
-      if(window.VESSEL){
-        const ov=document.getElementById('pb-vessel-overlay');
-        // Remove drag handle so it doesn't accumulate on re-open
-        const h=document.getElementById('pb-vessel-handle');
-        if(h) h.remove();
-        if(ov) ov.style.transform='';
-        const mainDiv=document.getElementById('main-3d');
-        mainDiv.appendChild(window.VESSEL.renderer.domElement);
-        if(window.VESSEL.ground) window.VESSEL.ground.visible=true;
-        window.VESSEL._pb=false;
-        window.VESSEL.setPbCamera(false);
-        setTimeout(()=>window.VESSEL.resizeToContainer(mainDiv),60);
-      }
-      showPbPhase('aim');
-    }
-
-    function showPbPhase(name){
-      document.querySelectorAll('.pb-phase').forEach(p=>p.classList.remove('active'));
-      if(name==='aim') document.getElementById('pb-aim-phase').classList.add('active');
-      if(name==='result') document.getElementById('pb-result-phase').classList.add('active');
-    }
-
-    // Countdown capture
-    document.getElementById('pb-capture-btn').addEventListener('click',()=>{
-      const btn=document.getElementById('pb-capture-btn');
-      const cd=document.getElementById('pb-countdown');
-      btn.disabled=true;
-      cd.style.display='block';
-      let n=3;
-      cd.textContent=n;
-      const t=setInterval(()=>{
-        n--;
-        if(n>0){cd.textContent=n;}
-        else{
-          clearInterval(t);
-          cd.style.display='none';
-          btn.disabled=false;
-          capturePhotobooth();
-        }
-      },1000);
-    });
-
-    async function capturePhotobooth(){
-      const vid=document.getElementById('pb-video');
-      const W=vid.videoWidth||1280, H=vid.videoHeight||720;
-      const canvas=document.getElementById('pb-canvas');
-      canvas.width=W; canvas.height=H;
-      const ctx=canvas.getContext('2d');
-
-      // Draw mirrored camera (fills full frame)
-      ctx.save();
-      ctx.translate(W,0); ctx.scale(-1,1);
-      ctx.drawImage(vid,0,0,W,H);
-      ctx.restore();
-
-      // High-res vessel render — position derived from where the overlay actually is on screen
-      if(window.VESSEL&&window.VESSEL.renderHighRes){
-        const inner=document.querySelector('.pb-aim-inner');
-        const ov=document.getElementById('pb-vessel-overlay');
-        const iR=inner?inner.getBoundingClientRect():{left:0,top:0,width:W,height:H};
-        const oR=ov?ov.getBoundingClientRect():{left:W*0.64,top:H*0.10,right:W,bottom:H};
-        const sx=W/iR.width, sy=H/iR.height;
-        const oLeft=Math.max(0,Math.round((oR.left-iR.left)*sx));
-        const oTop =Math.max(0,Math.round((oR.top -iR.top )*sy));
-        const oW=Math.min(W-oLeft,Math.round(oR.width*sx));
-        const oH=Math.min(H-oTop, Math.round(oR.height*sy));
-        window.VESSEL.renderHighRes(oW,oH);
-        ctx.drawImage(window.VESSEL.renderer.domElement,oLeft,oTop,oW,oH);
-        if(ov) window.VESSEL.resizeToContainer(ov);
-      }
-
-      // Draw floral frame onto composite
-      const frameSvg=document.getElementById('pb-frame-svg');
-      if(frameSvg){
-        try{
-          const svgStr=new XMLSerializer().serializeToString(frameSvg);
-          const blob=new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'});
-          const url=URL.createObjectURL(blob);
-          await new Promise(res=>{
-            const img=new Image();
-            img.onload=()=>{ctx.drawImage(img,0,0,W,H);URL.revokeObjectURL(url);res();};
-            img.onerror=()=>{URL.revokeObjectURL(url);res();};
-            img.src=url;
-          });
-        }catch(e){}
-      }
-
-      const compositeDataURL=canvas.toDataURL('image/jpeg',0.92);
-
-      // Show in result phase as single composite image
-      document.getElementById('pb-composite-img').src=compositeDataURL;
-
-      // Save to API for QR
-      let qrUrl=null;
-      const pbData=await vesselApi('/photobooth',{composite:compositeDataURL});
-      if(pbData&&pbData.ok) qrUrl=pbData.render_url||`${SERVER}/renders/${pbData.filename}`;
-
-      const qrEl=document.getElementById('pb-qr');
-      const qrBlock=qrEl.closest('.pb-qr-block');
-      qrEl.innerHTML='';
-      if(qrUrl){
-        if(qrBlock) qrBlock.style.display='';
-        new QRCode(qrEl,{
-          text:qrUrl, width:160, height:160,
-          colorDark:'#000000', colorLight:'#ffffff',
-          correctLevel:QRCode.CorrectLevel.M,
-        });
-      }else if(qrBlock){ qrBlock.style.display='none'; }  // no server: download only
-
-      document.getElementById('pb-download').onclick=()=>{
-        const a=document.createElement('a');
-        a.href=compositeDataURL;
-        a.download=`vessel-${Date.now()}.jpg`;
-        a.click();
-      };
-
-      showPbPhase('result');
-
-      // Auto-restart for next visitor
-      const RESTART_SECS = 10;
-      const circumference = 144.51; // 2π × 23
-      let secs = RESTART_SECS;
-      const bar     = document.getElementById('pb-restart-bar');
-      const qrRing  = document.getElementById('pb-qr-ring');
-      const qrNum   = document.getElementById('pb-qr-num');
-      function updateQrTimer(s){
-        if(qrNum)  qrNum.textContent = s;
-        if(qrRing) qrRing.style.strokeDashoffset = circumference * (1 - s / RESTART_SECS);
-      }
-      updateQrTimer(secs);
-      bar.textContent = `Restarting in ${secs}…`;
-      const restartTimer = setInterval(()=>{
-        secs--;
-        if(secs > 0){
-          bar.textContent = `Restarting in ${secs}…`;
-          updateQrTimer(secs);
-        } else {
-          clearInterval(restartTimer);
-          window.location.reload();
-        }
-      }, 1000);
-
-      // Cancel restart if user interacts
-      document.getElementById('pb-retake').addEventListener('click', ()=>{
-        clearInterval(restartTimer);
-        bar.textContent='';
-        if(qrRing) qrRing.style.stroke='rgba(255,255,255,0.20)';
-      }, {once:true});
-      document.getElementById('pb-download').addEventListener('click', ()=>{
-        clearInterval(restartTimer);
-        bar.textContent='';
-        if(qrRing) qrRing.style.stroke='rgba(255,255,255,0.20)';
-      }, {once:true});
-    }
-
-    document.getElementById('pb-retake').addEventListener('click',()=>{
-      showPbPhase('aim');
-    });
-
-    // ── Landing overlay ──────────────────────────────────────────────────────
-    function dismissLanding(mode){
-      const el=document.getElementById('landing');
-      el.classList.add('hide');
-      setTimeout(()=>el.remove(), 700);
-      if(mode==='scan'){
-        document.querySelector('[data-panel="scan"]').click();
-      } else {
-        setTimeout(()=>document.getElementById('main-input').focus(), 750);
-      }
-    }
-    document.getElementById('lo-type').addEventListener('click', e=>{e.stopPropagation();dismissLanding('type');});
-    document.getElementById('lo-scan').addEventListener('click', e=>{e.stopPropagation();dismissLanding('scan');});
-    document.getElementById('landing').addEventListener('click', ()=>dismissLanding('type'));
-
-    function loadImage(src){
-      return new Promise((res,rej)=>{
-        const img=new Image();
-        img.crossOrigin='anonymous';
-        img.onload=()=>res(img);
-        img.onerror=rej;
-        img.src=src;
-      });
-    }
-  </script>
-
 </body>
 </html>
