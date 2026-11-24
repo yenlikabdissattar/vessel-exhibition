@@ -22,14 +22,14 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     /* ── Tokens ───────────────────────────────────────────────────────────
-       Night for the arrival, bone and paper for the gallery. The bone ground
-       is a warm neutral on purpose: a glaze is judged against grey, so the
+       Night for the arrival, white for the gallery. The ground
+       is white on purpose: a glaze is judged against grey, so the
        colour you are given reads true. */
     :root {
       --night: #0E0D0C;
       --cream: #F5F3EE;
-      --bone:  #E9E4DB;
-      --paper: #F7F4EF;
+      --bone:  #F1F1EF;
+      --paper: #FFFFFF;
       --ink:   #1B1815;
       --muted: #6A6158;            /* 5.2:1 on paper */
       --hair:  rgba(27,24,21,.14);
@@ -186,7 +186,7 @@
     dialog.portrait .x { color: var(--ink); }
 
     /* loading veil over the stage while a vessel is thrown */
-    .veil { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(233,228,219,.72); backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .3s; }
+    .veil { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255,255,255,.72); backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .3s; }
     .veil.on { opacity: 1; }
     .veil p { font-size: 19px; font-style: italic; }
 
@@ -1025,7 +1025,7 @@
       const V=await vessel(), img=new Image();
       img.onload = () => {
         const cv=document.createElement('canvas'); cv.width=1200; cv.height=1600; const x=cv.getContext('2d');
-        x.fillStyle='#E9E4DB'; x.fillRect(0,0,1200,1600); x.drawImage(img, 0, 0, 1200, 1350);
+        x.fillStyle='#FFFFFF'; x.fillRect(0,0,1200,1600); x.drawImage(img, 0, 0, 1200, 1350);
         x.fillStyle='#1B1815'; x.font='400 64px "Bodoni Moda", Didot, serif'; x.fillText(current.formName, 80, 1450);
         x.font='italic 32px "EB Garamond", Georgia, serif'; x.fillText(`No. ${current.no} · ${current.words.join(', ')} · ${current.glazeName}, ${current.finish.name}`, 82, 1505);
         x.font='26px "EB Garamond", Georgia, serif'; x.fillStyle='#6A6158'; x.fillText('VESSEL · Yenlik Abdissattar', 82, 1550);
@@ -1053,7 +1053,7 @@
     container.appendChild(renderer.domElement);
 
     // a gallery: warm grey wall, a stone plinth, one soft key light
-    const BONE = new THREE.Color('#E9E4DB');
+    const BONE = new THREE.Color('#FFFFFF');
     const scene = new THREE.Scene();
     scene.background = BONE.clone();
     scene.fog = new THREE.Fog(BONE, 9, 22);
@@ -1082,12 +1082,12 @@
     scene.add(key);
     const fill = new THREE.DirectionalLight(0xdfe6ff, 0.45); fill.position.set(-4.5, 2.4, 3.2); scene.add(fill);
     const rim  = new THREE.DirectionalLight(0xffffff, 0.9);  rim.position.set(-1.5, 4.5, -5); scene.add(rim);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xd9d0c2, 0.6));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xe6e6e4, 0.6));
 
-    const stone = new THREE.MeshStandardMaterial({ color:'#DDD6CB', roughness:0.95 });
+    const stone = new THREE.MeshStandardMaterial({ color:'#EEEEEC', roughness:0.95 });
     const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.98, 0.98, 0.7, 128), stone);
     plinth.position.y = -0.35; plinth.receiveShadow = true; scene.add(plinth);
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(40, 64), new THREE.MeshStandardMaterial({ color:'#E1DBD1', roughness:1 }));
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(40, 64), new THREE.MeshStandardMaterial({ color:'#FFFFFF', roughness:1 }));
     floor.rotation.x = -Math.PI/2; floor.position.y = -0.7; floor.receiveShadow = true; scene.add(floor);
 
     // ── forms: control points (radius, height) through a smooth spline ──
